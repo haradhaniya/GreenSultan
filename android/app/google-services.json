@@ -1,0 +1,90 @@
+{
+  "project_info": {
+    "project_number": "445085394060",
+    "project_id": "dfile-48084",
+    "storage_bucket": "dfile-48084.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:445085394060:android:c5b3cdaea09777110687a9",
+        "android_client_info": {
+          "package_name": "com.example.green_sultan"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "445085394060-8c6aet8388kcjce3hm2t71n5be0b7117.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCUgeODyI0EkAOMhszxJ8dVOpwIRA-6bMw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "445085394060-8c6aet8388kcjce3hm2t71n5be0b7117.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "445085394060-2tucj2maei8sgntavcbjhqualfjcom96.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.dfileonline"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:445085394060:android:5ea931b785651f0a0687a9",
+        "android_client_info": {
+          "package_name": "com.haradhaniya_lahore.pk"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "445085394060-7t697qqvd7qoo8o1mmjifs0fcf4mvv81.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.haradhaniya_lahore.pk",
+            "certificate_hash": "49ebbefbd597bc56be82948f6a825be6b71cb9e1"
+          }
+        },
+        {
+          "client_id": "445085394060-8c6aet8388kcjce3hm2t71n5be0b7117.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCUgeODyI0EkAOMhszxJ8dVOpwIRA-6bMw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "445085394060-8c6aet8388kcjce3hm2t71n5be0b7117.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "445085394060-2tucj2maei8sgntavcbjhqualfjcom96.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.dfileonline"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
