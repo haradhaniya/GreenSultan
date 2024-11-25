@@ -164,6 +164,7 @@ class _ProductCardState extends State<ProductCard> {
                 },
                 child: const Text('Edit'),
               ),
+              SizedBox(width: 10,),
               ElevatedButton(
                 onPressed: () {
                   _showDeleteDialog(context, widget.product.id);
