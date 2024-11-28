@@ -29,19 +29,17 @@ class _TotalsState extends State<Totals> {
 
   Future<void> fetchValueData() async {
     try {
-      final fruitsSnapshot =
-      await FirebaseFirestore.instance.collection('Fruits').get();
-      final veggiesSnapshot =
-      await FirebaseFirestore.instance.collection('Veggies').get();
+      final veggiesSnapshot = await FirebaseFirestore.instance
+          .collection('Cities')
+          .doc('Lahore')
+          .collection('LahoreVeggies')
+          .get();
 
       final tempNameToValue1 = <String, String>{};
       final tempNameToValue3 = <String, String>{};
       final tempNameToPrice = <String, String>{};
 
-      processSnapshot(
-          fruitsSnapshot, tempNameToValue1, tempNameToValue3, tempNameToPrice);
-      processSnapshot(
-          veggiesSnapshot, tempNameToValue1, tempNameToValue3, tempNameToPrice);
+      processSnapshot(veggiesSnapshot, tempNameToValue1, tempNameToValue3, tempNameToPrice);
 
       setState(() {
         nameToValue1 = tempNameToValue1;
@@ -77,17 +75,17 @@ class _TotalsState extends State<Totals> {
       final DateTime now = DateTime.now();
       final String formattedDate = "${now.year}-${now.month}-${now.day}";
 
-      final totalsRef =
-      FirebaseFirestore.instance.collection('Totals').doc(formattedDate);
+      final totalsRef = FirebaseFirestore.instance
+          .collection('Cities')
+          .doc('Lahore')
+          .collection('Totals')
+          .doc(formattedDate);
 
-      // Get the existing document data
       final documentSnapshot = await totalsRef.get();
       final data = documentSnapshot.data() ?? {};
 
-      // Update only the mandi grand total
       data['grandTotalMandi'] = mandiTotal;
 
-      // Set the updated data back to the document
       await totalsRef.set({
         ...data,
         'timestamp': FieldValue.serverTimestamp(),
@@ -108,17 +106,17 @@ class _TotalsState extends State<Totals> {
       final DateTime now = DateTime.now();
       final String formattedDate = "${now.year}-${now.month}-${now.day}";
 
-      final totalsRef =
-      FirebaseFirestore.instance.collection('Totals').doc(formattedDate);
+      final totalsRef = FirebaseFirestore.instance
+          .collection('Cities')
+          .doc('Lahore')
+          .collection('Totals')
+          .doc(formattedDate);
 
-      // Get the existing document data
       final documentSnapshot = await totalsRef.get();
       final data = documentSnapshot.data() ?? {};
 
-      // Update only the price grand total
       data['grandTotalPrice'] = priceTotal;
 
-      // Set the updated data back to the document
       await totalsRef.set({
         ...data,
         'timestamp': FieldValue.serverTimestamp(),
@@ -133,9 +131,6 @@ class _TotalsState extends State<Totals> {
       }
     }
   }
-
-
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -171,21 +166,44 @@ class _TotalsState extends State<Totals> {
   }
 
   Widget buildOrderHistoryMessageTable() {
-    return StreamBuilder(
-      stream: FirebaseFirestore.instance.collection('OrderDetails').snapshots(),
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('Cities')
+          .doc('Lahore')
+          .collection('OrderDetails')
+          .snapshots(),
       builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
         if (snapshot.hasError) {
-          return Text('Error: ${snapshot.error}');
+          return Center(
+            child: Text('Error: ${snapshot.error}', style: const TextStyle(color: Colors.red)),
+          );
         }
 
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
         }
 
-        return buildMessageTable(snapshot);
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          return const Center(
+            child: Text('No Order Details Found'),
+          );
+        }
+
+        try {
+          // Pass data to buildMessageTable
+          return buildMessageTable(snapshot);
+        } catch (e) {
+          if (kDebugMode) {
+            print('Error building message table: $e');
+          }
+          return const Center(
+            child: Text('Error processing order data'),
+          );
+        }
       },
     );
   }
+
 
   Widget buildMessageTable(AsyncSnapshot<QuerySnapshot> snapshot) {
     final rows = <DataRow>[];
@@ -264,8 +282,7 @@ class _TotalsState extends State<Totals> {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start, // Aligns children to the start (left)
-        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           DataTable(
             columns: const [
@@ -280,8 +297,6 @@ class _TotalsState extends State<Totals> {
           ),
           const SizedBox(height: 20),
           Column(
-            // crossAxisAlignment: CrossAxisAlignment.start, // Aligns children to the start (left)
-            // mainAxisAlignment: MainAxisAlignment.start,
             children: [
               Text(
                 'Grand Total (MandiTotal): $grandTotalMandi',
@@ -297,8 +312,6 @@ class _TotalsState extends State<Totals> {
           )
         ],
       ),
-
-
     );
   }
 
@@ -307,8 +320,11 @@ class _TotalsState extends State<Totals> {
       final DateTime now = DateTime.now();
       final String formattedDate = "${now.year}-${now.month}-${now.day}";
 
-      final totalsRef =
-      FirebaseFirestore.instance.collection('Totals').doc(formattedDate);
+      final totalsRef = FirebaseFirestore.instance
+          .collection('Cities')
+          .doc('Lahore')
+          .collection('Totals')
+          .doc(formattedDate);
 
       await totalsRef.set({
         'grandTotalMandi': mandiTotal,
@@ -325,6 +341,7 @@ class _TotalsState extends State<Totals> {
       }
     }
   }
+
 
   Widget buildSaveButtons() {
     return Row(

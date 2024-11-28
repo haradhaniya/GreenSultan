@@ -3,47 +3,33 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class WhatsappOrders extends StatelessWidget {
+class WhatsappOrders extends StatefulWidget {
   const WhatsappOrders({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      theme: ThemeData(useMaterial3: false),
-      debugShowCheckedModeBanner: false,
-      home: Scaffold(
-        appBar: AppBar(
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.white),
-            onPressed: () => Navigator.pop(context),
-          ),
-          title: const Text('Orders WhatsApp',
-              style: TextStyle(color: Colors.white)),
-          backgroundColor: Colors.blue,
-          actions: const [],
-        ),
-        body: const OrdersList(),
-      ),
-    );
-  }
-}
-
-class OrdersList extends StatefulWidget {
-  const OrdersList({super.key});
 
   @override
   _OrdersListState createState() => _OrdersListState();
 }
 
-class _OrdersListState extends State<OrdersList> {
-  final CollectionReference ordersCollection =
-      FirebaseFirestore.instance.collection('Whatsapp Orders');
-  final CollectionReference orderHistoryCollection =
-      FirebaseFirestore.instance.collection('Whatsapp Order History');
-  final CollectionReference completedOrdersCollection =
-      FirebaseFirestore.instance.collection('completed_orders');
-  final CollectionReference phoneNumbersCollection =
-      FirebaseFirestore.instance.collection('phone_numbers');
+class _OrdersListState extends State<WhatsappOrders> {
+  final CollectionReference ordersCollection = FirebaseFirestore.instance
+      .collection('Cities') // Navigate to the Cities collection
+      .doc('Lahore') // Reference the Lahore document
+      .collection('Whatsapp Orders'); // Access the Whatsapp Orders subcollection
+
+  final CollectionReference orderHistoryCollection = FirebaseFirestore.instance
+      .collection('Cities') // Navigate to the Cities collection
+      .doc('Lahore') // Reference the Lahore document
+      .collection('Whatsapp Order History'); // Access the Whatsapp Order History subcollection
+
+  final CollectionReference completedOrdersCollection = FirebaseFirestore.instance
+      .collection('Cities') // Navigate to the Cities collection
+      .doc('Lahore') // Reference the Lahore document
+      .collection('completed_orders'); // Access the completed_orders subcollection
+
+  final CollectionReference phoneNumbersCollection = FirebaseFirestore.instance
+      .collection('Cities') // Navigate to the Cities collection
+      .doc('Lahore') // Reference the Lahore document
+      .collection('phone_numbers'); // Access the phone_numbers subcollection
 
   String? _enteredName;
 
@@ -199,12 +185,12 @@ class _OrdersListState extends State<OrdersList> {
   Future<void> _copyOrderToClipboard(BuildContext context,
       String customerDetails, String orderSummary, DateTime timestamp) async {
     final orderDetails = '''
-Order Details:
-$customerDetails
-Order Summary:
-$orderSummary
-Timestamp: $timestamp
-''';
+      Order Details:
+      $customerDetails
+      Order Summary:
+      $orderSummary
+      Timestamp: $timestamp
+      ''';
 
     await Clipboard.setData(ClipboardData(text: orderDetails));
     ScaffoldMessenger.of(context).showSnackBar(
@@ -213,93 +199,102 @@ Timestamp: $timestamp
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Expanded(
-          child: StreamBuilder<QuerySnapshot>(
-            stream: ordersCollection
-                .orderBy('timestamp', descending: true)
-                .snapshots(),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
-              }
-
-              if (snapshot.hasError) {
-                return Center(child: Text('Error: ${snapshot.error}'));
-              }
-
-              if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                return const Center(child: Text('No orders found.'));
-              }
-
-              final orders = snapshot.data!.docs;
-
-              return ListView.builder(
-                itemCount: orders.length,
-                itemBuilder: (context, index) {
-                  final order = orders[index];
-                  final customerDetails = order['customerDetails'] ?? 'N/A';
-                  final orderSummary = order['orderSummary'] ?? 'N/A';
-                  final timestamp =
-                      (order['timestamp'] as Timestamp?)?.toDate() ??
-                          DateTime.now();
-                  final riderName = _enteredName ??
-                      'Rider'; // Use the stored entered name or a default
-
-                  return Card(
-                    margin: const EdgeInsets.all(8.0),
-                    elevation: 5,
-                    child: Padding(
-                      padding: const EdgeInsets.all(12.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                'Order ${index + 1}',
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.bold, fontSize: 18),
-                              ),
-                              IconButton(
-                                icon:
-                                    const Icon(Icons.delete, color: Colors.red),
-                                onPressed: () =>
-                                    _deleteOrder(context, order.id),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 8.0),
-                          Text('$customerDetails'),
-                          const SizedBox(height: 4.0),
-                          Text(formatOrderSummary(orderSummary)),
-                          const SizedBox(height: 4.0),
-                          Text('Timestamp: $timestamp'),
-                          const SizedBox(height: 8.0),
-                          ElevatedButton(
-                            onPressed: () => _copyOrderToClipboard(context,
-                                customerDetails, orderSummary, timestamp),
-                            child: const Text('Copy Order'),
-                          ),
-                        ],
+    return Scaffold(
+      appBar: AppBar(title: Text("Whatsapp Orders"),),
+      body: Column(
+        children: [
+          Expanded(
+            child: StreamBuilder<QuerySnapshot?>(
+              stream: ordersCollection
+                  .orderBy('timestamp', descending: true)
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+      
+                if (snapshot.hasError) {
+                  return Center(child: Text('Error: ${snapshot.error}'));
+                }
+      
+                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                  return const Center(child: Text('No orders found.'));
+                }
+      
+                final orders = snapshot.data!.docs;
+      
+                return ListView.builder(
+                  itemCount: orders.length,
+                  itemBuilder: (context, index) {
+                    final order = orders[index];
+                    final customerDetails = order['customerDetails'] ?? 'N/A';
+                    final orderSummary = order['orderSummary'] ?? 'N/A';
+      
+                    // Safely handle the timestamp field
+                    DateTime? timestamp;
+                    if (order['timestamp'] is Timestamp) {
+                      timestamp = (order['timestamp'] as Timestamp).toDate();
+                    } else {
+                      timestamp = DateTime.tryParse(order['timestamp'] ?? '') ??
+                          DateTime.now(); // Fallback to now
+                    }
+      
+                    final riderName = _enteredName ?? 'Rider';
+      
+                    return Card(
+                      margin: const EdgeInsets.all(8.0),
+                      elevation: 5,
+                      child: Padding(
+                        padding: const EdgeInsets.all(12.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'Order ${index + 1}',
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.bold, fontSize: 18),
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.delete, color: Colors.red),
+                                  onPressed: () =>
+                                      _deleteOrder(context, order.id),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8.0),
+                            Text('$customerDetails'),
+                            const SizedBox(height: 4.0),
+                            Text(formatOrderSummary(orderSummary)),
+                            const SizedBox(height: 4.0),
+                            Text('Timestamp: ${timestamp.toString()}'),
+                            const SizedBox(height: 8.0),
+                            ElevatedButton(
+                              onPressed: () => _copyOrderToClipboard(
+                                  context, customerDetails, orderSummary, timestamp!),
+                              child: const Text('Copy Order'),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  );
-                },
-              );
-            },
+                    );
+                  },
+                );
+              },
+            ),
           ),
-        ),
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: ElevatedButton(
-            onPressed: () => _saveAndTransferOrders(context),
-            child: const Text('Save All Orders and Transfer to History'),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: ElevatedButton(
+              onPressed: () => _saveAndTransferOrders(context),
+              child: const Text('Save All Orders and Transfer to History'),
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
+
 }

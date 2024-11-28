@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/services.dart';
+import 'package:green_sultan/live_hara_dhaniya/pages/NewOrderDetailsScreen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:green_sultan/live_hara_dhaniya/total.dart';
 import 'package:intl/intl.dart';
@@ -52,18 +53,27 @@ class _MessageScreen2State extends State<MessageScreen2> {
   }
 
   void _deleteMessage(String messageId) {
-    _firestore.collection('Orders History').doc(messageId).delete();
+    _firestore
+        .collection('Cities') // Top-level collection
+        .doc('Lahore') // Specific document
+        .collection('Orders History') // Sub-collection
+        .doc(messageId) // Target document ID
+        .delete();
   }
-
   void _sendMessage(String message) {
     String processedMessage = _processMessage(message);
     Timestamp timestamp = Timestamp.now();
-    _firestore.collection('Orders History').add({
+    _firestore
+        .collection('Cities') // Top-level collection
+        .doc('Lahore') // Specific document
+        .collection('Orders History') // Sub-collection
+        .add({
       'message': processedMessage,
       'timestamp': timestamp,
     });
     _controller.clear();
   }
+
 
   String _processMessage(String message) {
     return message.replaceAllMapped(
@@ -98,7 +108,11 @@ class _MessageScreen2State extends State<MessageScreen2> {
         children: [
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
-              stream: _firestore.collection('Orders History').snapshots(),
+              stream: _firestore
+                  .collection('Cities') // Top-level collection
+                  .doc('Lahore') // Specific document
+                  .collection('Orders History') // Sub-collection
+                  .snapshots(),
               builder: (context, snapshot) {
                 if (!snapshot.hasData) {
                   return const Center(child: CircularProgressIndicator());
@@ -139,13 +153,15 @@ class _MessageScreen2State extends State<MessageScreen2> {
                               ),
                             ),
                             ...lines.map((line) {
-                              final pattern = RegExp(r'^(\d+):\s*\(([^)]+)\)\s*([^|]+)\|Qty:\s*([\d\.]+)');
+                              final pattern = RegExp(
+                                  r'^(\d+):\s*\(([^)]+)\)\s*([^|]+)\|Qty:\s*([\d\.]+)');
                               final match = pattern.firstMatch(line);
                               if (match != null) {
                                 final itemNumber = match.group(1)!;
                                 final itemName = '${match.group(2)} ${match.group(3)}';
                                 final itemQty = double.parse(match.group(4)!);
-                                final checkboxKey = _generateCheckboxKey(messageId, itemName);
+                                final checkboxKey =
+                                _generateCheckboxKey(messageId, itemName);
                                 final isChecked = _checkboxStates[checkboxKey] ?? false;
 
                                 return ListTile(
@@ -160,7 +176,8 @@ class _MessageScreen2State extends State<MessageScreen2> {
                                         },
                                       ),
                                       Expanded(
-                                        child: Text('$itemNumber: $itemName | Qty: $itemQty'),
+                                        child:
+                                        Text('$itemNumber: $itemName | Qty: $itemQty'),
                                       ),
                                     ],
                                   ),
@@ -213,14 +230,18 @@ class _MessageScreen2State extends State<MessageScreen2> {
         child: const Icon(Icons.send),
       ),
       bottomNavigationBar: BottomAppBar(
-        color: Colors.blue,
+        color: Colors.green[700],
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             IconButton(
               icon: const Icon(Icons.pageview, color: Colors.white,),
               onPressed: () {
-                _firestore.collection('Orders History').get().then((querySnapshot) {
+                _firestore.collection('Cities') // Top-level collection
+                    .doc('Lahore') // Specific document
+                    .collection('Orders History') // Sub-collection
+                    .get()
+                    .then((querySnapshot) {
                   Map<String, dynamic> itemCounts = {};
 
                   for (var document in querySnapshot.docs) {
@@ -285,99 +306,5 @@ class _MessageScreen2State extends State<MessageScreen2> {
         ),
       ),
     );
-  }
-}
-
-class NewOrderDetailScreen extends StatelessWidget {
-  final Map<String, dynamic> itemCounts;
-
-  const NewOrderDetailScreen(this.itemCounts, {super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    int totalItems = itemCounts.keys.length;
-    double totalQuantity = itemCounts.values.fold(
-        0.0, (sum, item) => sum + item['totalQuantity']);
-    DateTime now = DateTime.now();
-    String formattedDate = DateFormat('EEEE, MMMM d, yyyy').format(
-        now); // Format the current date
-
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Order Details'),
-        actions: [
-          IconButton(
-
-            icon: const Icon(Icons.copy),
-            onPressed: () {
-              final orderDetails = formatOrderDetails(
-                  totalItems, totalQuantity, formattedDate);
-              Clipboard.setData(ClipboardData(text: orderDetails)).then((_) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                      content: Text('Order details copied to clipboard')),
-                );
-              });
-            },
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(formattedDate, style: const TextStyle(
-                    fontSize: 18, fontWeight: FontWeight.bold)),
-                // Display the date
-                Text('Total Items: $totalItems'),
-                Text('Total Quantity: $totalQuantity '),
-              ],
-            ),
-          ),
-          Expanded(
-            child: ListView.builder(
-              itemCount: itemCounts.keys.length,
-              itemBuilder: (context, index) {
-                String itemName = itemCounts.keys.elementAt(index);
-                List<Map<String,
-                    dynamic>> itemDetails = itemCounts[itemName]['details'];
-
-                return ExpansionTile(
-                  title: Text(
-                      '$itemName: ${itemCounts[itemName]['totalQuantity']} '),
-                  children: itemDetails.map((detail) {
-                    return ListTile(
-                      title: Text('Quantity: ${detail['quantity']} '),
-                      subtitle: Text('${detail['name']} - ${detail['phone']}'),
-                    );
-                  }).toList(),
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  String formatOrderDetails(int totalItems, double totalQuantity, String date) {
-    final buffer = StringBuffer();
-    buffer.writeln('Date: $date'); // Include the date
-    buffer.writeln('Total Items: $totalItems');
-    buffer.writeln('Total Quantity: $totalQuantity');
-    buffer.writeln();
-    itemCounts.forEach((itemName, itemData) {
-      buffer.writeln('$itemName: ${itemData['totalQuantity']}');
-      List<Map<String, dynamic>> itemDetails = itemData['details'];
-      for (var detail in itemDetails) {
-        buffer.writeln(
-            '  Quantity: ${detail['quantity']} - ${detail['name']} (${detail['phone']})');
-      }
-      buffer.writeln();
-    });
-    return buffer.toString();
   }
 }

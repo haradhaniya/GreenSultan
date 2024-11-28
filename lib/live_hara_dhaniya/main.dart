@@ -18,9 +18,6 @@ class MessageScreen1 extends StatefulWidget {
 class _MessageScreen1State extends State<MessageScreen1> {
   final TextEditingController _controller = TextEditingController();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  // BlueThermalPrinter bluetooth = BlueThermalPrinter.instance;
-  // List<BluetoothDevice> _devices = [];
-  // BluetoothDevice? _selectedDevice;
 
   @override
   void initState() {
@@ -28,18 +25,6 @@ class _MessageScreen1State extends State<MessageScreen1> {
     // initBluetooth();
     requestBluetoothPermissions(); // Request Bluetooth permissions
   }
-
-  // void initBluetooth() async {
-  //   bool isConnected = (await bluetooth.isConnected) ?? false;
-  //   if (!isConnected) {
-  //     refreshDevices();
-  //   }
-  // }
-  //
-  // void refreshDevices() async {
-  //   _devices = await bluetooth.getBondedDevices();
-  //   setState(() {});
-  // }
 
   Future<void> requestBluetoothPermissions() async {
     final statusConnect = await Permission.bluetoothConnect.status;
@@ -53,103 +38,21 @@ class _MessageScreen1State extends State<MessageScreen1> {
     }
   }
 
-  // void _showPrintDialog(String message) {
-  //   showDialog(
-  //     context: context,
-  //     builder: (BuildContext context) {
-  //       return AlertDialog(
-  //         title: const Text('Order Details'),
-  //         content: SingleChildScrollView(
-  //           child: Text(message),
-  //         ),
-  //         actions: [
-  //           DropdownButton<BluetoothDevice>(
-  //             hint: const Text('Select Bluetooth Printer'),
-  //             value: _selectedDevice,
-  //             onChanged: (BluetoothDevice? device) {
-  //               setState(() {
-  //                 _selectedDevice = device;
-  //               });
-  //             },
-  //             items: _devices
-  //                 .map((device) => DropdownMenuItem(
-  //               value: device,
-  //               child: Text(device.name!),
-  //             ))
-  //                 .toList(),
-  //           ),
-  //           // TextButton(
-  //           //   onPressed: () {
-  //           //     _printMessage(message);
-  //           //     Navigator.of(context).pop();
-  //           //   },
-  //           //   child: const Text('Print'),
-  //           // ),
-  //           TextButton(
-  //             onPressed: () {
-  //               Navigator.of(context).pop();
-  //             },
-  //             child: const Text('Close'),
-  //           ),
-  //         ],
-  //       );
-  //     },
-  //   );
-  // }
-  //
-  // void _printMessage(String message) async {
-  //   if (_selectedDevice != null) {
-  //     await bluetooth.connect(_selectedDevice!);
-  //
-  //     // ESC/POS command to select UTF-8 encoding
-  //     final escPosUtf8 = Uint8List.fromList([0x1B, 0x74, 0x11]);
-  //
-  //     // ESC/POS command to select custom font (replace with actual command if different)
-  //     final selectCustomFont = Uint8List.fromList([0x1B, 0x33, 0x01]); // Example command, may vary for your printer
-  //
-  //     // ESC/POS command to set text size (optional)
-  //     final textSize = Uint8List.fromList([0x1B, 0x21, 0x00]);
-  //
-  //     // ESC/POS command to print and feed
-  //     final printAndFeed = Uint8List.fromList([0x0A]);
-  //
-  //     // Send ESC/POS commands to configure the printer
-  //     bluetooth.writeBytes(escPosUtf8);
-  //     bluetooth.writeBytes(selectCustomFont);
-  //     bluetooth.writeBytes(textSize);
-  //
-  //     // Send the encoded message
-  //     bluetooth.writeBytes(Uint8List.fromList(utf8.encode(message)));
-  //
-  //     // Add line feed and perform the printing
-  //     bluetooth.writeBytes(printAndFeed);
-  //
-  //     bluetooth.printNewLine();
-  //     bluetooth.printNewLine();
-  //     bluetooth.printNewLine();
-  //     await bluetooth.disconnect();
-  //   } else {
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       const SnackBar(content: Text('Please select a Bluetooth printer')),
-  //     );
-  //   }
-  // }
-
   void _deleteMessage(String messageId) {
-    _firestore.collection('Orders History').doc(messageId).delete();
+    _firestore
+        .collection('Cities') // Top-level collection
+        .doc('Lahore') // Specific document
+        .collection('Orders History') // Sub-collection
+        .doc(messageId) // Target document ID
+        .delete();
   }
 
-  void _sendMessage(String message) {
-    Timestamp timestamp = Timestamp.now(); // Generate timestamp once
-    _firestore.collection('Orders History').add({
-      'message': message,
-      'timestamp': timestamp, // Use the same timestamp for the entire message
-    });
-    _controller.clear();
-  }
 
   void _navigateToOrderDetail(Map<String, double> itemCounts) {
-    _firestore.collection('OrderDetails').get().then((querySnapshot) {
+    final orderDetailsCollection = _firestore.collection('Cities').doc('Lahore').collection('OrderDetails');
+
+    // Delete existing order details
+    orderDetailsCollection.get().then((querySnapshot) {
       for (var doc in querySnapshot.docs) {
         doc.reference.delete();
       }
@@ -202,7 +105,11 @@ class _MessageScreen1State extends State<MessageScreen1> {
         children: [
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
-              stream: _firestore.collection('Orders History').snapshots(),
+              stream: _firestore
+                  .collection('Cities') // Top-level collection
+                  .doc('Lahore') // Specific document
+                  .collection('Orders History') // Sub-collection
+                  .snapshots(),
               builder: (context, snapshot) {
                 if (!snapshot.hasData) {
                   return const Center(
@@ -266,30 +173,6 @@ class _MessageScreen1State extends State<MessageScreen1> {
               },
             ),
           ),
-          // Padding(
-          //   padding: const EdgeInsets.all(8.0),
-          //   child: Container(
-          //     height: 200,
-          //     decoration: BoxDecoration(
-          //       border: Border.all(color: Colors.grey),
-          //       borderRadius: BorderRadius.circular(8.0),
-          //     ),
-          //     child: SingleChildScrollView(
-          //       child: Padding(
-          //         padding: const EdgeInsets.symmetric(horizontal: 8.0),
-          //         child: TextField(
-          //           controller: _controller,
-          //           decoration: const InputDecoration(
-          //             hintText: 'Type your order...',
-          //             border: InputBorder.none,
-          //           ),
-          //           keyboardType: TextInputType.multiline,
-          //           maxLines: null,
-          //         ),
-          //       ),
-          //     ),
-          //   ),
-          // ),
         ],
       ),
       bottomNavigationBar: BottomAppBar(
@@ -300,7 +183,11 @@ class _MessageScreen1State extends State<MessageScreen1> {
             IconButton(
               icon: const Icon(Icons.pageview, color: Colors.white),
               onPressed: () {
-                _firestore.collection('Orders History').get().then((querySnapshot) {
+                _firestore.collection('Cities') // Top-level collection
+                    .doc('Lahore') // Specific document
+                    .collection('Orders History') // Sub-collection
+                    .get()
+                    .then((querySnapshot) {
                   Map<String, double> itemCounts = {};
                   for (var document in querySnapshot.docs) {
                     final messageText = document['message'];

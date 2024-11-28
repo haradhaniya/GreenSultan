@@ -168,7 +168,9 @@ class _CompletedOrdersListState extends State<CompletedOrdersList> {
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
               stream: _firestore
-                  .collection('completed_orders')
+                  .collection('Cities') // Navigate to Cities collection
+                  .doc('Lahore') // Reference the Lahore document
+                  .collection('completed_orders') // Access the completed_orders subcollection
                   .orderBy('timestamp', descending: true)
                   .snapshots(),
               builder: (context, snapshot) {
@@ -196,14 +198,12 @@ class _CompletedOrdersListState extends State<CompletedOrdersList> {
                     final address = orderData['address'] as String? ?? '';
                     final grandTotal = orderData['grandTotal'] is double
                         ? orderData['grandTotal'].toString()
-                        : '0.0'; // Convert double to string
+                        : '0.0';
                     final name = orderData['name'] as String? ?? '';
                     final orderCount = orderData['orderCount'] as int? ?? 0;
-                    final phoneNumber =
-                        orderData['phoneNumber'] as String? ?? '';
+                    final phoneNumber = orderData['phoneNumber'] as String? ?? '';
                     final timestamp = orderData['timestamp'] as Timestamp?;
-                    final date =
-                    timestamp != null ? timestamp.toDate() : DateTime.now();
+                    final date = timestamp != null ? timestamp.toDate() : DateTime.now();
 
                     // Fetch button states from Firestore if not already fetched
                     if (_largeButtonStates[orderId] == null &&
@@ -214,32 +214,25 @@ class _CompletedOrdersListState extends State<CompletedOrdersList> {
                     // Calculate the color based on the date difference
                     final currentDate = DateTime.now();
                     final difference = currentDate.difference(date).inDays;
-                    final color = difference > 7
-                        ? Colors.red
-                        : Colors.green; // Red if more than 7 days, else green
+                    final color = difference > 7 ? Colors.red : Colors.green;
 
                     _phoneNumbers.add(phoneNumber);
 
                     return Card(
-                      margin: const EdgeInsets.symmetric(
-                          vertical: 5, horizontal: 10),
+                      margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
                       child: Stack(
                         children: [
                           Padding(
-                            padding: const EdgeInsets.all(
-                                16.0), // Add padding inside the card
+                            padding: const EdgeInsets.all(16.0),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Row(
-                                  mainAxisAlignment:
-                                  MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
-                                    // Placeholder for top right section
                                     Container(
                                       padding: const EdgeInsets.all(8),
-                                      color:
-                                      color, // Set color based on date difference
+                                      color: color,
                                       child: Text(
                                         '$orderCount',
                                         style: const TextStyle(
@@ -250,30 +243,24 @@ class _CompletedOrdersListState extends State<CompletedOrdersList> {
                                       ),
                                     ),
                                     IconButton(
-                                        onPressed: () =>
-                                            _copyPhoneNumber(phoneNumber),
+                                        onPressed: () => _copyPhoneNumber(phoneNumber),
                                         icon: Icon(Icons.copy)),
                                     Text(
                                       'Days: $difference',
                                       style: TextStyle(
-                                        fontSize: 18.0, // Adjust the font size
-                                        fontWeight: FontWeight
-                                            .bold, // Make the font bold
-                                        color: Colors
-                                            .purple, // Change the text color
-                                        letterSpacing:
-                                        1.2, // Adjust the spacing between letters
+                                        fontSize: 18.0,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.purple,
+                                        letterSpacing: 1.2,
                                         shadows: [
                                           Shadow(
                                             blurRadius: 2.0,
-                                            color:
-                                            Colors.grey, // Add shadow color
-                                            offset: Offset(2.0,
-                                                2.0), // Adjust the shadow offset
+                                            color: Colors.grey,
+                                            offset: Offset(2.0, 2.0),
                                           ),
                                         ],
                                       ),
-                                    )
+                                    ),
                                   ],
                                 ),
                                 const SizedBox(height: 10),
@@ -283,54 +270,37 @@ class _CompletedOrdersListState extends State<CompletedOrdersList> {
                                 Text('Grand Total: $grandTotal'),
                                 Text('Date: ${date.toString()}'),
                                 const SizedBox(height: 10),
-                                Text(
-                                  address,
-                                  style: const TextStyle(fontSize: 16),
-                                ),
-                                const SizedBox(height: 10),
                                 Row(
-                                  mainAxisAlignment:
-                                  MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
                                     ElevatedButton(
-                                      onPressed:
-                                      _largeButtonStates[orderId] == true
+                                      onPressed: _largeButtonStates[orderId] == true
                                           ? null
                                           : () {
                                         setState(() {
-                                          _largeButtonStates[
-                                          orderId] =
-                                          true; // Disable the button
+                                          _largeButtonStates[orderId] = true;
                                           _incrementCounter('large');
-
                                           _updateButtonStateInFirestore(
-                                              orderId,
-                                              _largeButtonStates[
-                                              orderId]!,
-                                              _smallButtonStates[
-                                              orderId] ??
-                                                  false);
+                                            orderId,
+                                            _largeButtonStates[orderId]!,
+                                            _smallButtonStates[orderId] ?? false,
+                                          );
                                         });
                                       },
                                       child: const Text('Large'),
                                     ),
                                     ElevatedButton(
-                                      onPressed:
-                                      _smallButtonStates[orderId] == true
+                                      onPressed: _smallButtonStates[orderId] == true
                                           ? null
                                           : () {
                                         setState(() {
-                                          _smallButtonStates[
-                                          orderId] =
-                                          true; // Disable the button
+                                          _smallButtonStates[orderId] = true;
                                           _incrementCounter('small');
                                           _updateButtonStateInFirestore(
-                                              orderId,
-                                              _largeButtonStates[
-                                              orderId] ??
-                                                  false,
-                                              _smallButtonStates[
-                                              orderId]!);
+                                            orderId,
+                                            _largeButtonStates[orderId] ?? false,
+                                            _smallButtonStates[orderId]!,
+                                          );
                                         });
                                       },
                                       child: const Text('Small'),

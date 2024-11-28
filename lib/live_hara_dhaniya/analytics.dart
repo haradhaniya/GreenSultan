@@ -13,7 +13,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
   late TextEditingController _titleController;
   late TextEditingController _amountController;
   NumberFormat currencyFormatter = NumberFormat.currency(symbol: 'Rs');
-  double totalDifference = 0.0; // State variable to hold the total difference sum
+  double totalDifference =
+      0.0; // State variable to hold the total difference sum
 
   @override
   void initState() {
@@ -42,11 +43,12 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     return double.tryParse(amount) ?? 0.0;
   }
 
-  void _saveMessage(DocumentReference documentRef, String title, String amount) {
+  void _saveMessage(
+      DocumentReference documentRef, String title, String amount) {
     FirebaseFirestore.instance.runTransaction((transaction) async {
       DocumentSnapshot freshSnapshot = await transaction.get(documentRef);
-      List<dynamic> messages =
-      List.from((freshSnapshot.data() as Map<String, dynamic>)['messages'] ?? []);
+      List<dynamic> messages = List.from(
+          (freshSnapshot.data() as Map<String, dynamic>)['messages'] ?? []);
 
       messages = messages.map((message) {
         if (message is Map<String, dynamic>) {
@@ -64,24 +66,24 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
         _amountController.clear();
       });
     }).catchError((error) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Error saving message: $error')));
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error saving message: $error')));
     });
   }
 
   void _deleteMessage(DocumentReference documentRef, int index) {
     FirebaseFirestore.instance.runTransaction((transaction) async {
       DocumentSnapshot freshSnapshot = await transaction.get(documentRef);
-      List<dynamic> messages =
-      List.from((freshSnapshot.data() as Map<String, dynamic>)['messages'] ?? []);
+      List<dynamic> messages = List.from(
+          (freshSnapshot.data() as Map<String, dynamic>)['messages'] ?? []);
 
       if (index >= 0 && index < messages.length) {
         messages.removeAt(index);
         transaction.update(documentRef, {'messages': messages});
       }
     }).catchError((error) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Error deleting message: $error')));
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error deleting message: $error')));
     });
   }
 
@@ -104,7 +106,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     return groupedData;
   }
 
-  double calculateDifference(dynamic mandi, dynamic price, List<dynamic> messages) {
+  double calculateDifference(
+      dynamic mandi, dynamic price, List<dynamic> messages) {
     double difference = 0.0;
 
     if (mandi is num && price is num) {
@@ -135,8 +138,13 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
           icon: const Icon(Icons.arrow_back),
         ),
         title: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-          stream: FirebaseFirestore.instance.collection('Totals').snapshots(),
-          builder: (context, AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>> snapshot) {
+          stream: FirebaseFirestore.instance
+              .collection('Cities')
+              .doc('Lahore')
+              .collection('Totals')
+              .snapshots(),
+          builder: (context,
+              AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>> snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting ||
                 snapshot.hasError) {
               return const Text('Analytics');
@@ -148,216 +156,256 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
         ),
       ),
       body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-        stream: FirebaseFirestore.instance.collection('Totals').snapshots(),
-        builder: (context,
-            AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>> snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          } else if (snapshot.hasError) {
-            return Center(
-              child: Text('Error: ${snapshot.error}'),
-            );
-          } else {
-            final groupedData = _groupDataByDate(snapshot.data!.docs);
+          stream: FirebaseFirestore.instance
+              .collection('Cities')
+              .doc('Lahore')
+              .collection('Totals')
+              .snapshots(),
+          builder: (context,
+              AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>> snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            } else if (snapshot.hasError) {
+              return Center(
+                child: Text('Error: ${snapshot.error}'),
+              );
+            } else {
+              final groupedData = _groupDataByDate(snapshot.data!.docs);
 
-            final sortedKeys = groupedData.keys.toList()
-              ..sort((a, b) => DateFormat('yyyy-MM-dd')
-                  .parse(a)
-                  .compareTo(DateFormat('yyyy-MM-dd').parse(b)));
+              final sortedKeys = groupedData.keys.toList()
+                ..sort((a, b) => DateFormat('yyyy-MM-dd')
+                    .parse(a)
+                    .compareTo(DateFormat('yyyy-MM-dd').parse(b)));
 
-            return ListView.builder(
-              itemCount: sortedKeys.length,
-              itemBuilder: (context, index) {
-                final date = sortedKeys[index];
-                final docs = groupedData[date]!;
+              return ListView.builder(
+                itemCount: sortedKeys.length,
+                itemBuilder: (context, index) {
+                  final date = sortedKeys[index];
+                  final docs = groupedData[date]!;
 
-                double totalSum = 0.0; // Initialize sum for this group
+                  double totalSum = 0.0;
 
-                return Card(
-                  margin:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                  shadowColor: Colors.black,
-                  elevation: 5,
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Date: $date',
-                            style: const TextStyle(
-                                fontSize: 18.0, fontWeight: FontWeight.bold)),
-                        ...docs.map((document) {
-                          final data = document.data();
-                          final grandTotalMandi = data?['grandTotalMandi'] ?? 'N/A';
-                          final grandTotalPrice = data?['grandTotalPrice'] ?? 'N/A';
-                          final timestamp = data?['timestamp'] as Timestamp?;
+                  return Card(
+                    margin: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 16),
+                    shadowColor: Colors.black,
+                    elevation: 5,
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Date: $date',
+                              style: const TextStyle(
+                                  fontSize: 18.0, fontWeight: FontWeight.bold)),
+                          ...docs.map((document) {
+                            final data = document.data();
+                            final grandTotalMandi =
+                                data?['grandTotalMandi'] ?? 'N/A';
+                            final grandTotalPrice =
+                                data?['grandTotalPrice'] ?? 'N/A';
+                            final timestamp = data?['timestamp'] as Timestamp?;
 
-                          String formattedTimestamp = 'N/A';
-                          if (timestamp != null) {
-                            formattedTimestamp = formatTimestamp(timestamp);
-                          }
+                            String formattedTimestamp = 'N/A';
+                            if (timestamp != null) {
+                              formattedTimestamp = formatTimestamp(timestamp);
+                            }
 
-                          final messages =
-                          (data?['messages'] as List<dynamic>? ?? []).cast<Map<String, dynamic>>();
+                            final messages =
+                                (data?['messages'] as List<dynamic>? ?? [])
+                                    .cast<Map<String, dynamic>>();
 
-                          double difference = calculateDifference(grandTotalMandi, grandTotalPrice, messages);
-                          totalSum += difference; // Accumulate difference for each document
+                            double difference = calculateDifference(
+                                grandTotalMandi, grandTotalPrice, messages);
+                            totalSum += difference;
 
-                          return Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              ListTile(
-                                title: Text('Date: $formattedTimestamp'),
-                                subtitle: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    DataTable(
-                                      columns: const [
-                                        DataColumn(label: Text('Grand Total Mandi')),
-                                        DataColumn(label: Text('Grand Total Price')),
-                                      ],
-                                      rows: [
-                                        DataRow(cells: [
-                                          DataCell(Text('$grandTotalMandi')),
-                                          DataCell(Text('$grandTotalPrice')),
-                                        ]),
-                                      ],
-                                    ),
-
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                                      child: Column(
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                ListTile(
+                                  title: Text('Date: $formattedTimestamp'),
+                                  subtitle: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      DataTable(
+                                        columns: const [
+                                          DataColumn(
+                                              label: Text('Grand Total Mandi')),
+                                          DataColumn(
+                                              label: Text('Grand Total Price')),
+                                        ],
+                                        rows: [
+                                          DataRow(cells: [
+                                            DataCell(Text('$grandTotalMandi')),
+                                            DataCell(Text('$grandTotalPrice')),
+                                          ]),
+                                        ],
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 16.0, vertical: 8.0),
+                                        child: Column(
+                                          children: [
+                                            TextFormField(
+                                              controller: _titleController,
+                                              decoration: const InputDecoration(
+                                                hintText: 'Enter title',
+                                              ),
+                                            ),
+                                            const SizedBox(height: 8.0),
+                                            TextFormField(
+                                              controller: _amountController,
+                                              decoration: const InputDecoration(
+                                                hintText: 'Enter amount',
+                                              ),
+                                              keyboardType:
+                                                  TextInputType.number,
+                                            ),
+                                            IconButton(
+                                              onPressed: () {
+                                                String title = _titleController
+                                                    .text
+                                                    .trim();
+                                                String amount =
+                                                    _amountController.text
+                                                        .trim();
+                                                if (title.isNotEmpty &&
+                                                    amount.isNotEmpty) {
+                                                  _saveMessage(
+                                                      document.reference,
+                                                      title,
+                                                      amount);
+                                                }
+                                              },
+                                              icon: const Icon(Icons.send),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8.0),
+                                      const Text('Messages:',
+                                          style: TextStyle(
+                                              fontSize: 18.0,
+                                              fontWeight: FontWeight.bold)),
+                                      const SizedBox(height: 4.0),
+                                      Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: messages
+                                            .asMap()
+                                            .entries
+                                            .map((entry) {
+                                          final index = entry.key;
+                                          final message = entry.value;
+                                          final title =
+                                              message['title'] ?? 'Unknown';
+                                          final amount =
+                                              message['amount'] ?? 'Unknown';
+                                          return Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 16.0),
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: [
+                                                Text('- $title: $amount'),
+                                                IconButton(
+                                                  icon:
+                                                      const Icon(Icons.delete),
+                                                  onPressed: () {
+                                                    _deleteMessage(
+                                                        document.reference,
+                                                        index);
+                                                  },
+                                                ),
+                                              ],
+                                            ),
+                                          );
+                                        }).toList(),
+                                      ),
+                                      const SizedBox(height: 8.0),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.end,
                                         children: [
-                                          TextFormField(
-                                            controller: _titleController,
-                                            decoration: const InputDecoration(
-                                              hintText: 'Enter title',
+                                          const Text(
+                                            'Difference: ',
+                                            style: TextStyle(
+                                              fontSize: 16.0,
+                                              fontWeight: FontWeight.bold,
                                             ),
                                           ),
-                                          const SizedBox(height: 8.0),
-                                          TextFormField(
-                                            controller: _amountController,
-                                            decoration: const InputDecoration(
-                                              hintText: 'Enter amount',
+                                          Text(
+                                            formatCurrency(difference),
+                                            style: const TextStyle(
+                                              fontSize: 16.0,
+                                              fontWeight: FontWeight.bold,
                                             ),
-                                            keyboardType: TextInputType.number,
-                                          ),
-                                          IconButton(
-                                            onPressed: () {
-                                              String title = _titleController.text.trim();
-                                              String amount = _amountController.text.trim();
-                                              if (title.isNotEmpty && amount.isNotEmpty) {
-                                                _saveMessage(document.reference, title, amount);
-                                              }
-                                            },
-                                            icon: const Icon(Icons.send),
                                           ),
                                         ],
                                       ),
-                                    ),
-                                    const SizedBox(height: 8.0),
-                                    const Text('Messages:', style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold)),
-                                    const SizedBox(height: 4.0),
-                                    Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: messages.asMap().entries.map((entry) {
-                                        final index = entry.key;
-                                        final message = entry.value;
-                                        final title = message['title'] ?? 'Unknown';
-                                        final amount = message['amount'] ?? 'Unknown';
-                                        return Padding(
-                                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                                          child: Row(
-                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Text('- $title: $amount'),
-                                              IconButton(
-                                                icon: const Icon(Icons.delete),
-                                                onPressed: () {
-                                                  _deleteMessage(document.reference, index);
-                                                },
-                                              ),
-                                            ],
-                                          ),
-                                        );
-                                      }).toList(),
-                                    ),
-                                    const SizedBox(height: 8.0),
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment.end,
-                                      children: [
-                                        const Text(
-                                          'Difference: ',
-                                          style: TextStyle(
-                                            fontSize: 16.0,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                        Text(
-                                          formatCurrency(difference),
-                                          style: const TextStyle(
-                                            fontSize: 16.0,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            ],
-                          );
-                        }),
-
-                        // Display total sum of differences for this group
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              const Text(
-                                'Total Difference Sum: ',
-                                style: TextStyle(
-                                  fontSize: 18.0,
-                                  fontWeight: FontWeight.bold,
+                              ],
+                            );
+                          }),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16.0, vertical: 8.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                const Text(
+                                  'Total Difference Sum: ',
+                                  style: TextStyle(
+                                    fontSize: 18.0,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
-                              ),
-                              Text(
-                                formatCurrency(totalSum),
-                                style: const TextStyle(
-                                  fontSize: 18.0,
-                                  fontWeight: FontWeight.bold,
+                                Text(
+                                  formatCurrency(totalSum),
+                                  style: const TextStyle(
+                                    fontSize: 18.0,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                );
-              },
-            );
-          }
-        },
-      ),
+                  );
+                },
+              );
+            }
+          }),
       bottomNavigationBar: BottomAppBar(
         child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-          stream: FirebaseFirestore.instance.collection('Totals').snapshots(),
-          builder: (context, AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>> snapshot) {
+          stream: FirebaseFirestore.instance
+              .collection('Cities')
+              .doc('Lahore')
+              .collection('Totals')
+              .snapshots(),
+          builder: (context,
+              AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>> snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting ||
                 snapshot.hasError) {
-              return const SizedBox.shrink(); // Hide bottom bar if data is not available
+              return const SizedBox.shrink();
             } else {
-              // Calculate total difference sum across all documents
-              double totalDifferenceSum = snapshot.data!.docs.fold(0.0, (sum, doc) {
+              double totalDifferenceSum =
+                  snapshot.data!.docs.fold(0.0, (sum, doc) {
                 final data = doc.data();
                 final grandTotalMandi = data['grandTotalMandi'];
                 final grandTotalPrice = data['grandTotalPrice'];
                 final messages = (data['messages'] as List<dynamic>?) ?? [];
-                double difference = calculateDifference(grandTotalMandi, grandTotalPrice, messages);
+                double difference = calculateDifference(
+                    grandTotalMandi, grandTotalPrice, messages);
                 return sum + difference;
               });
 

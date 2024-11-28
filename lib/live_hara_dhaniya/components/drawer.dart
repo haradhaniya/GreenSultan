@@ -13,16 +13,16 @@ class CustomDrawer extends StatelessWidget {
       child: ListView(
         padding: EdgeInsets.zero, // Remove default padding
         children: [
-          const DrawerHeader(
+          DrawerHeader(
             decoration: BoxDecoration(
-              color: Colors.blue, // Set background color for header
+              color: Colors.green[700], // Set background color for header
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 CircleAvatar(
                   backgroundImage: AssetImage('images/app_logo.png'), // Set profile image
-                  radius: 30,
+                  radius: 40,
                 ),
                 SizedBox(height: 16),
                 Text(
