@@ -16,8 +16,8 @@ class _CompletedOrdersListState extends State<CompletedOrdersList> {
   int _smallCounter = 0;
 
   // Maps to store button states for each order
-  Map<String, bool> _largeButtonStates = {};
-  Map<String, bool> _smallButtonStates = {};
+  final Map<String, bool> _largeButtonStates = {};
+  final Map<String, bool> _smallButtonStates = {};
 
   @override
   void initState() {

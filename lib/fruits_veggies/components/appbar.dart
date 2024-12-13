@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:green_sultan/fruits_veggies/products/veggies_price.dart';
 
 class ProductAppBar extends StatelessWidget implements PreferredSizeWidget {
-  const ProductAppBar({Key? key}) : super(key: key);
+  const ProductAppBar({super.key});
 
   @override
   Widget build(BuildContext context) {

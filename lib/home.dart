@@ -5,6 +5,8 @@ import 'fruits_veggies/products/veggies_price.dart';
 import 'live_hara_dhaniya/main.dart';
 
 class HomeScreen extends StatelessWidget {
+  const HomeScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -26,7 +28,7 @@ class HomeScreen extends StatelessWidget {
               icon: Icons.motorcycle,
               onTap: () => Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => MyHomePage()),
+                MaterialPageRoute(builder: (context) => RiderApp()),
               ),
             ),
             buildCard(
@@ -46,7 +48,7 @@ class HomeScreen extends StatelessWidget {
               icon: Icons.local_grocery_store,
               onTap: () => Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => ProductList()),
+                MaterialPageRoute(builder: (context) => VeggiesListBeforeVefification()),
               ),
             ),
             buildCard(

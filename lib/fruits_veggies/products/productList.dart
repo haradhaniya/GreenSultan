@@ -1,13 +1,14 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:green_sultan/fruits_veggies/products/productCard.dart';
-class ProductsList extends StatelessWidget {
+
+class VeggiesListAfterVefification extends StatelessWidget {
   final bool isPinVerified;
   final String searchQuery;
   final TextEditingController _pinController = TextEditingController();
   final String _correctPin = '786';
 
-  ProductsList(
+  VeggiesListAfterVefification(
       {super.key, required this.isPinVerified, required this.searchQuery});
 
   @override

@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/services.dart';
 import 'package:green_sultan/live_hara_dhaniya/pages/NewOrderDetailsScreen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:green_sultan/live_hara_dhaniya/total.dart';
-import 'package:intl/intl.dart';
 
 class MessageScreen2 extends StatefulWidget {
   const MessageScreen2({super.key});

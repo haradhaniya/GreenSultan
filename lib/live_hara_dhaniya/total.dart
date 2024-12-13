@@ -39,7 +39,8 @@ class _TotalsState extends State<Totals> {
       final tempNameToValue3 = <String, String>{};
       final tempNameToPrice = <String, String>{};
 
-      processSnapshot(veggiesSnapshot, tempNameToValue1, tempNameToValue3, tempNameToPrice);
+      processSnapshot(
+          veggiesSnapshot, tempNameToValue1, tempNameToValue3, tempNameToPrice);
 
       setState(() {
         nameToValue1 = tempNameToValue1;
@@ -131,6 +132,7 @@ class _TotalsState extends State<Totals> {
       }
     }
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -175,7 +177,8 @@ class _TotalsState extends State<Totals> {
       builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
         if (snapshot.hasError) {
           return Center(
-            child: Text('Error: ${snapshot.error}', style: const TextStyle(color: Colors.red)),
+            child: Text('Error: ${snapshot.error}',
+                style: const TextStyle(color: Colors.red)),
           );
         }
 
@@ -204,7 +207,6 @@ class _TotalsState extends State<Totals> {
     );
   }
 
-
   Widget buildMessageTable(AsyncSnapshot<QuerySnapshot> snapshot) {
     final rows = <DataRow>[];
     grandTotalMandi = 0;
@@ -220,7 +222,7 @@ class _TotalsState extends State<Totals> {
 
         itemCounts.forEach((itemName, itemCount) {
           final fuzzyNameMatch =
-          findBestMatch(itemName.toLowerCase(), nameToValue1.keys.toList());
+              findBestMatch(itemName.toLowerCase(), nameToValue1.keys.toList());
           final value1 = nameToValue1[fuzzyNameMatch] ?? 'N/A';
           final value3 = nameToValue3[fuzzyNameMatch] ?? 'N/A';
           final price = nameToPrice[fuzzyNameMatch] ?? 'N/A';
@@ -300,12 +302,14 @@ class _TotalsState extends State<Totals> {
             children: [
               Text(
                 'Grand Total (MandiTotal): $grandTotalMandi',
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                style:
+                    const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
               ),
               const SizedBox(height: 20),
               Text(
                 'Grand Total (Total Price): $grandTotalPrice',
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                style:
+                    const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
               ),
               const SizedBox(height: 20),
             ],
@@ -342,7 +346,6 @@ class _TotalsState extends State<Totals> {
     }
   }
 
-
   Widget buildSaveButtons() {
     return Row(
       children: [
@@ -362,7 +365,6 @@ class _TotalsState extends State<Totals> {
       ],
     );
   }
-
 
   bool _isValidNumber(String str) {
     final number = int.tryParse(str);

@@ -11,7 +11,8 @@ plugins {
 android {
     namespace = "com.example.green_sultan"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    ndkVersion flutter.ndkVersion
+    ndkVersion = "26.1.10909125" // Explicitly define the required NDK version
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
@@ -27,10 +28,11 @@ android {
         applicationId = "com.example.green_sultan"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
+        minSdk = 24
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        multiDexEnabled true
     }
 
     buildTypes {
@@ -44,4 +46,7 @@ android {
 
 flutter {
     source = "../.."
+}
+dependencies {
+    implementation 'androidx.multidex:multidex:2.0.1'
 }

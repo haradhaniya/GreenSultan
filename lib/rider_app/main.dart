@@ -11,14 +11,14 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key});
+class RiderApp extends StatefulWidget {
+  const RiderApp({super.key});
 
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+  MyHomePageState createState() => MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class MyHomePageState extends State<RiderApp> {
   final TextEditingController _messageController = TextEditingController();
   List<String> _digitItems = [];
   List<String> _textItems = [];
@@ -637,7 +637,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   key: ValueKey(index),
                   tileColor: _priceAdded[index]
                       ? Colors.blue[900]
-                      : Colors.blueGrey[900],
+                      : Colors.grey[300],
                   contentPadding: const EdgeInsets.symmetric(
                       vertical: 2.0, horizontal: 4.0),
                   title: Row(
@@ -645,11 +645,10 @@ class _MyHomePageState extends State<MyHomePage> {
                       // Counter
                       Text(
                         '${index + 1}:',
-                        style: const TextStyle(color: Colors.white),
                       ),
                       const SizedBox(width: 8.0),
                       // Move icon at the beginning
-                      const Icon(Icons.move_down, color: Colors.white),
+                      const Icon(Icons.move_down),
                       const SizedBox(width: 8.0),
                       Expanded(
                         child: Row(

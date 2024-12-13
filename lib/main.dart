@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:green_sultan/home.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:green_sultan/splash_screen/splash_screen.dart';
 import 'firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
 
@@ -8,7 +9,11 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  runApp(MyApp());
+  runApp(
+    const ProviderScope( // Initialize Riverpod here
+      child: MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -70,7 +75,8 @@ class MyApp extends StatelessWidget {
           unselectedItemColor: Colors.grey[300],
         ),
       ),
-      home: HomeScreen(),
+      home: SplashScreen(),
     );
   }
 }
+

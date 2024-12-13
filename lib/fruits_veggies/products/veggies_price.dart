@@ -3,14 +3,14 @@ import 'package:green_sultan/fruits_veggies/components/appbar.dart';
 import 'package:green_sultan/fruits_veggies/products/productList.dart';
 import 'package:green_sultan/fruits_veggies/products/product_add_form.dart';
 
-class ProductList extends StatefulWidget {
-  const ProductList({super.key});
+class VeggiesListBeforeVefification extends StatefulWidget {
+  const VeggiesListBeforeVefification({super.key});
 
   @override
-  _ProductListState createState() => _ProductListState();
+  ProductListState createState() => ProductListState();
 }
 
-class _ProductListState extends State<ProductList> {
+class ProductListState extends State<VeggiesListBeforeVefification> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
 
@@ -49,7 +49,7 @@ class _ProductListState extends State<ProductList> {
           ),
           Expanded(
             child:
-                ProductsList(isPinVerified: false, searchQuery: _searchQuery),
+            VeggiesListAfterVefification(isPinVerified: false, searchQuery: _searchQuery),
           ),
         ],
       ),
@@ -209,7 +209,7 @@ class ProductFruitsListWithPin extends StatelessWidget {
           ),
         ],
       ),
-      body: ProductsList(isPinVerified: isPinVerified, searchQuery: ''),
+      body: VeggiesListAfterVefification(isPinVerified: isPinVerified, searchQuery: ''),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.push(
