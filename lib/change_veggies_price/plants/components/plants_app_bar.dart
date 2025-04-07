@@ -1,20 +1,22 @@
 import 'package:flutter/material.dart';
-import 'package:green_sultan/fruits_veggies/products/veggies_price.dart';
+import '../plants_price.dart';
 
-class ProductAppBar extends StatelessWidget implements PreferredSizeWidget {
-  const ProductAppBar({super.key});
+
+
+class PlantsAppBar extends StatelessWidget implements PreferredSizeWidget {
+  const PlantsAppBar({super.key});
 
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      title: const Text('Product Upload'),
+      title: const Text('Upload Plants'),
       actions: [
         IconButton(
           icon: const Icon(Icons.lock),
           onPressed: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const PinCodeScreen()),
+              MaterialPageRoute(builder: (context) => const PlantsPinCodeScreen()),
             );
           },
         ),

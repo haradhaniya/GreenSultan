@@ -1,15 +1,15 @@
 import 'package:animate_do/animate_do.dart';
-import 'package:flutter/gestures.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:green_sultan/auth/signup_screen.dart';
 import 'package:green_sultan/forms/login_form.dart';
 import '../forms/city_select_drop_down.dart';
-import '../forms/role_select_drop_down.dart';
+import '../home.dart';
 import '../provider/city_provider.dart';
 import '../provider/selected_city_provider.dart';
 import '../provider/user_provider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -23,7 +23,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final TextEditingController _passwordController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   bool _isPasswordVisible = false;
-  String? _selectedRole = 'Owner'; // Default role is 'Owner'
+  final String? selectedRole = 'Owner'; // Default role is 'Owner'
 
   @override
   void initState() {
@@ -33,18 +33,103 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     });
   }
 
-  Future<void> saveUserData(String email, String selectedCity) async {
-    try {
-      await ref.read(userProvider.notifier).saveUserData(email, selectedCity);
-      showSnackbar('User data saved successfully!');
-    } catch (e) {
-      showSnackbar('Error saving user data: $e');
+// Role-based navigation
+  void navigateToRoleScreen(String selectedRole) {
+    Widget destinationScreen;
+
+    // Use if-else to check the role and navigate accordingly
+    switch (selectedRole.toLowerCase()) {
+      // Convert to lowercase for comparison
+      case 'owner':
+        destinationScreen = const HomeScreen();
+        break;
+      case 'administrator':
+        destinationScreen =
+            const HomeScreen(); // Changed to HomeScreen with access control
+        break;
+      case 'rider':
+        // For riders, we now direct them to the HomeScreen which will handle access control
+        destinationScreen = const HomeScreen();
+        break;
+      default:
+        destinationScreen =
+            const HomeScreen(); // Default screen if no role matched
     }
+
+    // Navigate to the destination screen and remove previous screens from the navigation stack
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => destinationScreen),
+    );
   }
 
-  void showSnackbar(String message) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(message)));
+  Future<void> _authenticate() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    final String email = _emailController.text.trim();
+    final String password = _passwordController.text;
+    final String selectedCity = ref.read(cityProvider) ?? '';
+
+    if (selectedCity.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select a city')),
+      );
+      return;
+    }
+
+    try {
+      // Sign in to Firebase Auth
+      final UserCredential userCredential = await FirebaseAuth.instance
+          .signInWithEmailAndPassword(email: email, password: password);
+
+      // Check if the user exists in Firestore for the selected city
+      final userDoc = await FirebaseFirestore.instance
+          .collection('Cities')
+          .doc(selectedCity)
+          .collection('Green_Sultan_Users')
+          .doc(email)
+          .get();
+
+      if (!userDoc.exists) {
+        // User doesn't exist in the selected city
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('User not found for the selected city')),
+        );
+        await FirebaseAuth.instance.signOut();
+        return;
+      }
+
+      // Save the user role to the provider
+      final userRole = userDoc.data()?['role'] ?? 'user';
+
+      // Save user data to provider
+      await ref.read(userProvider.notifier).saveUserData(
+            email,
+            selectedCity,
+            userRole, // Use the retrieved role
+          );
+
+      // Navigate based on the user's role
+      navigateToRoleScreen(userRole);
+    } on FirebaseAuthException catch (e) {
+      // Handle auth exceptions
+      String message;
+      if (e.code == 'user-not-found') {
+        message = 'No user found for that email.';
+      } else if (e.code == 'wrong-password') {
+        message = 'Wrong password provided.';
+      } else {
+        message = e.message ?? 'An error occurred during authentication.';
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message)),
+      );
+    } catch (e) {
+      // Handle other exceptions
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString())),
+      );
+    }
   }
 
   @override
@@ -80,7 +165,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           color: Colors.white,
         ),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 25.0, vertical: 20.0),
+          padding: const EdgeInsets.symmetric(horizontal: 35.0, vertical: 20.0),
           child: Form(
             key: _formKey,
             child: Column(
@@ -98,15 +183,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   },
                 ),
                 const SizedBox(height: 10),
-                RoleDropdown(
-                  selectedRole: _selectedRole,
-                  onRoleChanged: (String? newValue) {
-                    setState(() {
-                      _selectedRole = newValue;
-                    });
-                  },
-                ),
-                const SizedBox(height: 10),
                 LoginUserForm(
                   emailController: _emailController,
                   passwordController: _passwordController,
@@ -119,7 +195,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 ),
                 signInButton(size, selectedCity),
                 const SizedBox(height: 20),
-                footerText(context),
               ],
             ),
           ),
@@ -148,6 +223,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       ],
     );
   }
+
   Widget logo(double size) {
     return Image.asset(
       'images/app_logo.png',
@@ -159,16 +235,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   Widget signInButton(Size size, String? selectedCity) {
     return ElevatedButton(
-      onPressed: () {
-        if (_formKey.currentState?.validate() ?? false) {
-          final email = _emailController.text.trim();
-          if (selectedCity != null) {
-            saveUserData(email, selectedCity);
-          } else {
-            showSnackbar('Please select a city');
-          }
-        }
-      },
+      onPressed: _authenticate,
       style: ElevatedButton.styleFrom(
         backgroundColor: Colors.green,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
@@ -181,31 +248,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           color: Colors.white,
           fontWeight: FontWeight.w600,
         ),
-      ),
-    );
-  }
-
-  Widget footerText(BuildContext context) {
-    return Text.rich(
-      TextSpan(
-        style:
-            GoogleFonts.inter(fontSize: 12.0, color: const Color(0xFF3B4C68)),
-        children: [
-          const TextSpan(text: 'Don’t have an account?'),
-          TextSpan(
-            text: ' Sign up',
-            style: const TextStyle(
-                color: Color(0xFFFF5844), fontWeight: FontWeight.w700),
-            recognizer: TapGestureRecognizer()
-              ..onTap = () {
-                // Navigate to the Sign Up screen
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => SignUpScreen()),
-                );
-              },
-          ),
-        ],
       ),
     );
   }

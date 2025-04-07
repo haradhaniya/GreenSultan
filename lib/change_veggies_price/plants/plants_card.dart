@@ -1,12 +1,14 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:green_sultan/provider/city_provider.dart';
 
-class ProductCard extends StatefulWidget {
+class PlantsCard extends ConsumerStatefulWidget {
   final QueryDocumentSnapshot product;
   final bool isPinVerified;
   final int index;
 
-  const ProductCard({
+  const PlantsCard({
     super.key,
     required this.product,
     required this.isPinVerified,
@@ -14,10 +16,10 @@ class ProductCard extends StatefulWidget {
   });
 
   @override
-  _ProductCardState createState() => _ProductCardState();
+  ProductCardState createState() => ProductCardState();
 }
 
-class _ProductCardState extends State<ProductCard> {
+class ProductCardState extends ConsumerState<PlantsCard> {
   late TextEditingController _value1Controller;
   late TextEditingController _value2Controller;
   late TextEditingController _value3Controller;
@@ -29,15 +31,14 @@ class _ProductCardState extends State<ProductCard> {
     _value2Controller = TextEditingController();
     _value3Controller = TextEditingController();
 
-    // Assuming 'Lahore' is the selected city, you can replace it with dynamic city selection
-    String city = 'Lahore'; // You can dynamically choose the city
+    final selectedCity = ref.watch(cityProvider);
 
     // Fetch existing values for the product from the 'veggies_values' collection under the selected city
     FirebaseFirestore.instance
         .collection('Cities') // Cities collection
-        .doc(city) // Document for the specific city (e.g., 'Lahore')
+        .doc(selectedCity) // Document for the specific city (e.g., 'Lahore')
         .collection(
-            'veggies_values') // veggies_values collection under the city
+            'plants_values') // veggies_values collection under the city
         .doc(widget.product.id) // Document for the specific product
         .get()
         .then((documentSnapshot) {
@@ -164,7 +165,9 @@ class _ProductCardState extends State<ProductCard> {
                 },
                 child: const Text('Edit'),
               ),
-              SizedBox(width: 10,),
+              SizedBox(
+                width: 10,
+              ),
               ElevatedButton(
                 onPressed: () {
                   _showDeleteDialog(context, widget.product.id);
@@ -179,16 +182,11 @@ class _ProductCardState extends State<ProductCard> {
   }
 
   void _autoSave() {
-    // Assuming 'Lahore' is the selected city, you can replace it with dynamic city selection
-    String city =
-        'Lahore'; // Replace this with dynamic city selection if needed
+    final messenger = ScaffoldMessenger.of(context); // Store reference safely
 
-    // Save the values to the 'veggies_values' collection under the selected city
     FirebaseFirestore.instance
-        .collection('Cities') // Cities collection
-        .doc(city) // Document for the specific city (e.g., 'Lahore')
         .collection(
-            'veggies_values') // veggies_values collection under the city
+            'plants_values') // Directly access the 'veggies_values' collection
         .doc(widget.product.id) // Product document with specific ID
         .set({
       'value1': _value1Controller.text,
@@ -196,17 +194,20 @@ class _ProductCardState extends State<ProductCard> {
       'value3': _value3Controller.text,
     }, SetOptions(merge: true)) // Merge to avoid overwriting existing data
         .then((_) {
-      // Show a snackbar or perform any other action upon successful auto-save
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text('Data saved successfully!'),
-        duration: Duration(seconds: 2),
-      ));
+      if (mounted) {
+        // Use the stored messenger to show a snackbar safely
+        messenger.showSnackBar(const SnackBar(
+          content: Text('Data saved successfully!'),
+          duration: Duration(seconds: 2),
+        ));
+      }
     }).catchError((error) {
-      // Handle error if auto-save fails
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text('Failed to save data: $error'),
-        duration: const Duration(seconds: 2),
-      ));
+      if (mounted) {
+        messenger.showSnackBar(SnackBar(
+          content: Text('Failed to save data: $error'),
+          duration: const Duration(seconds: 2),
+        ));
+      }
     });
   }
 
@@ -271,29 +272,35 @@ class _ProductCardState extends State<ProductCard> {
   }
 
   void _updateValue(String fieldName, String value) {
-    // Assuming 'Lahore' is the selected city, replace with dynamic city selection if needed
-    String city =
-        'Lahore'; // Replace with dynamic city selection based on the app's context
+    final selectedCity =
+        ref.read(cityProvider); // Use `read` for a one-time read
+    final messenger =
+        ScaffoldMessenger.of(context); // Store messenger reference safely
 
     // Update the value in the 'veggies_values' collection under the selected city
     FirebaseFirestore.instance
         .collection('Cities') // Cities collection
-        .doc(city) // Document for the specific city (e.g., 'Lahore')
+        .doc(selectedCity) // Document for the specific city (e.g., 'Lahore')
         .collection(
-            'veggies_values') // veggies_values collection under the city
+            'plants_values') // veggies_values collection under the city
         .doc(widget.product.id) // Product document with specific ID
         .update(
             {fieldName: value}) // Update the specified field with the new value
         .then((_) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text('Value updated successfully'),
-        duration: Duration(seconds: 2),
-      ));
+      if (mounted) {
+        // Ensure the widget is still part of the tree
+        messenger.showSnackBar(const SnackBar(
+          content: Text('Value updated successfully'),
+          duration: Duration(seconds: 2),
+        ));
+      }
     }).catchError((error) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text('Failed to update value: $error'),
-        duration: const Duration(seconds: 2),
-      ));
+      if (mounted) {
+        messenger.showSnackBar(SnackBar(
+          content: Text('Failed to update value: $error'),
+          duration: const Duration(seconds: 2),
+        ));
+      }
     });
   }
 
@@ -306,6 +313,7 @@ class _ProductCardState extends State<ProductCard> {
     int value1 = int.tryParse(value1Controller.text.trim()) ?? 0;
     int value2 = int.tryParse(value2Controller.text.trim()) ?? 0;
     String value3Text = value3Controller.text.trim();
+    final selectedCity = ref.watch(cityProvider);
 
     // If value1 is 0 or empty, result is 0
     if (value1 == 0) {
@@ -314,16 +322,15 @@ class _ProductCardState extends State<ProductCard> {
         duration: Duration(seconds: 2),
       ));
 
-      // Assuming the city is 'Lahore', replace with dynamic city selection if needed
-      String city = 'Lahore'; // Replace with dynamic city selection
-
       FirebaseFirestore.instance
           .collection('Cities') // Cities collection
-          .doc(city) // Specific city document (e.g., 'Lahore')
-          .collection('LahoreVeggies') // Veggies collection under that city
+          .doc(selectedCity) // Specific city document (e.g., 'Lahore')
+          .collection(
+              '${selectedCity}Plants') // Veggies collection under that city
           .doc(product.id) // Product document
           .update({
         'price': '0',
+        'value1': value1Controller.text,
         'value2': value2Controller.text,
         'value3': value3Controller.text,
       }).then((_) {
@@ -340,8 +347,6 @@ class _ProductCardState extends State<ProductCard> {
       });
       return;
     }
-
-    double value3 = double.tryParse(value3Text) ?? 0.0;
     int totalSum = value1 + value2;
 
     bool divide = value3Text.contains('/');
@@ -367,16 +372,15 @@ class _ProductCardState extends State<ProductCard> {
       }
     }
 
-    // Assuming the city is 'Lahore', replace with dynamic city selection if needed
-    String city = 'Lahore'; // Replace with dynamic city selection
-
     FirebaseFirestore.instance
         .collection('Cities') // Cities collection
-        .doc(city) // Specific city document (e.g., 'Lahore')
-        .collection('LahoreVeggies') // Veggies collection under that city
+        .doc(selectedCity) // Specific city document (e.g., 'Lahore')
+        .collection(
+            '${selectedCity}Plants') // Veggies collection under that city
         .doc(product.id) // Product document
         .update({
       'price': totalSum.toString(),
+      'value1': value1Controller.text,
       'value2': value2Controller.text,
       'value3': value3Controller.text,
     }).then((_) {
@@ -402,7 +406,7 @@ class _ProductCardState extends State<ProductCard> {
         TextEditingController(text: product['price']);
     TextEditingController urlController =
         TextEditingController(text: product['url']); // Add this line
-
+    final selectedCity = ref.watch(cityProvider);
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -444,20 +448,18 @@ class _ProductCardState extends State<ProductCard> {
                 if (newName.isNotEmpty &&
                     newPrice.isNotEmpty &&
                     newUrl.isNotEmpty) {
-                  // Ensure all fields are filled
-                  // Assuming 'Lahore' is the city name, replace with dynamic city selection if needed
-                  String city = 'Lahore'; // Replace with dynamic city selection
-
                   FirebaseFirestore.instance
                       .collection('Cities') // Cities collection
-                      .doc(city) // Specific city document (e.g., 'Lahore')
+                      .doc(
+                          selectedCity) // Specific city document (e.g., 'Lahore')
                       .collection(
-                          'LahoreVeggies') // Veggies collection under that city
+                          '${selectedCity}Plants') // Veggies collection under that city
                       .doc(product.id) // Product document
                       .update({
                     'name': newName,
                     'price': newPrice,
-                    'url': newUrl, // Update the URL in Firestore
+                    'url': newUrl,
+                    // Update the URL in Firestore
                   }).then((_) {
                     Navigator.of(context).pop();
                     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
@@ -486,6 +488,7 @@ class _ProductCardState extends State<ProductCard> {
   }
 
   void _showDeleteDialog(BuildContext context, String productId) {
+    final selectedCity = ref.watch(cityProvider);
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -501,14 +504,12 @@ class _ProductCardState extends State<ProductCard> {
             ),
             TextButton(
               onPressed: () {
-                // Assuming 'Lahore' is the city name, replace with dynamic city selection if needed
-                String city = 'Lahore'; // Replace with dynamic city selection
-
                 FirebaseFirestore.instance
                     .collection('Cities') // Cities collection
-                    .doc(city) // Specific city document (e.g., 'Lahore')
+                    .doc(
+                        selectedCity) // Specific city document (e.g., 'Lahore')
                     .collection(
-                        'LahoreVeggies') // Veggies collection under that city
+                        '${selectedCity}Plants') // Veggies collection under that city
                     .doc(productId) // Product document
                     .delete()
                     .then((_) {

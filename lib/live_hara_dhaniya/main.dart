@@ -6,16 +6,17 @@ import 'package:permission_handler/permission_handler.dart';
 import 'NewOrders.dart';
 import 'components/drawer.dart';
 import 'total.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:green_sultan/provider/user_provider.dart';
 
-
-class MessageScreen1 extends StatefulWidget {
+class MessageScreen1 extends ConsumerStatefulWidget {
   const MessageScreen1({super.key});
 
   @override
-  _MessageScreen1State createState() => _MessageScreen1State();
+  ConsumerState<MessageScreen1> createState() => _MessageScreen1State();
 }
 
-class _MessageScreen1State extends State<MessageScreen1> {
+class _MessageScreen1State extends ConsumerState<MessageScreen1> {
   final TextEditingController _controller = TextEditingController();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
@@ -47,9 +48,11 @@ class _MessageScreen1State extends State<MessageScreen1> {
         .delete();
   }
 
-
   void _navigateToOrderDetail(Map<String, double> itemCounts) {
-    final orderDetailsCollection = _firestore.collection('Cities').doc('Lahore').collection('OrderDetails');
+    final orderDetailsCollection = _firestore
+        .collection('Cities')
+        .doc('Lahore')
+        .collection('OrderDetails');
 
     // Delete existing order details
     orderDetailsCollection.get().then((querySnapshot) {
@@ -64,7 +67,8 @@ class _MessageScreen1State extends State<MessageScreen1> {
       }).then((docRef) {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => MainOrderDetailScreen(itemCounts)),
+          MaterialPageRoute(
+              builder: (context) => MainOrderDetailScreen(itemCounts)),
         );
       }).catchError((error) {
         print('Failed to save order detail data: $error');
@@ -76,6 +80,30 @@ class _MessageScreen1State extends State<MessageScreen1> {
 
   @override
   Widget build(BuildContext context) {
+    // Always allow access to riders, check permission for other roles if needed
+    final userRole = ref.watch(userRoleProvider).toLowerCase();
+    final hasAccess = userRole == 'rider' ||
+        ref.read(hasPermissionProvider('LiveHaraDhaniya'));
+
+    if (!hasAccess) {
+      // If no access, redirect back or show an access denied screen
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Navigator.of(context).pop();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content:
+                  Text('You do not have permission to access this section')),
+        );
+      });
+
+      // Return a loading indicator until the redirect happens
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -100,8 +128,8 @@ class _MessageScreen1State extends State<MessageScreen1> {
           ),
         ],
       ),
-        drawer: const CustomDrawer(),
-        body: Column(
+      drawer: const CustomDrawer(),
+      body: Column(
         children: [
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
@@ -183,7 +211,8 @@ class _MessageScreen1State extends State<MessageScreen1> {
             IconButton(
               icon: const Icon(Icons.pageview, color: Colors.white),
               onPressed: () {
-                _firestore.collection('Cities') // Top-level collection
+                _firestore
+                    .collection('Cities') // Top-level collection
                     .doc('Lahore') // Specific document
                     .collection('Orders History') // Sub-collection
                     .get()
@@ -194,12 +223,14 @@ class _MessageScreen1State extends State<MessageScreen1> {
                     final lines = messageText.split('\n');
 
                     lines.forEach((line) {
-                      final pattern = RegExp(r'\(([^)]+)\)\s*(.*)\s+\|Qty:\s*([\d\.]+)');
+                      final pattern =
+                          RegExp(r'\(([^)]+)\)\s*(.*)\s+\|Qty:\s*([\d\.]+)');
                       final match = pattern.firstMatch(line);
                       if (match != null) {
                         final itemName = '${match.group(1)} ${match.group(2)}';
                         final itemQty = double.parse(match.group(3)!);
-                        itemCounts[itemName] = (itemCounts[itemName] ?? 0) + itemQty;
+                        itemCounts[itemName] =
+                            (itemCounts[itemName] ?? 0) + itemQty;
                       }
                     });
                   }
@@ -221,11 +252,12 @@ class _MessageScreen1State extends State<MessageScreen1> {
               ),
             ),
             IconButton(
-              icon: const Icon(Icons.new_releases,  color: Colors.white),
+              icon: const Icon(Icons.new_releases, color: Colors.white),
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const MessageScreen2()),
+                  MaterialPageRoute(
+                      builder: (context) => const MessageScreen2()),
                 );
               },
             ),
@@ -244,7 +276,8 @@ class MainOrderDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final totalItemCount = itemCounts.length;
-    final totalQuantity = itemCounts.values.fold(0.0, (sum, quantity) => sum + quantity);
+    final totalQuantity =
+        itemCounts.values.fold(0.0, (sum, quantity) => sum + quantity);
 
     // Format the order details as a string with extra newline for each item
     String formatOrderDetails() {

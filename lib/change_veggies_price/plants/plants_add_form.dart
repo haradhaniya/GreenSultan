@@ -1,14 +1,17 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class AddProductScreen extends StatefulWidget {
-  const AddProductScreen({super.key});
+import '../../provider/city_provider.dart';
+
+class AddPlantsScreen extends ConsumerStatefulWidget {
+  const AddPlantsScreen({super.key});
 
   @override
-  State<AddProductScreen> createState() => _AddProductScreenState();
+  ConsumerState<AddPlantsScreen> createState() => _AddProductScreenState();
 }
 
-class _AddProductScreenState extends State<AddProductScreen> {
+class _AddProductScreenState extends ConsumerState<AddPlantsScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _priceController = TextEditingController();
@@ -23,7 +26,6 @@ class _AddProductScreenState extends State<AddProductScreen> {
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
-        backgroundColor: Colors.green,
         elevation: 4,
       ),
       body: SingleChildScrollView(
@@ -37,9 +39,9 @@ class _AddProductScreenState extends State<AddProductScreen> {
                 const Text(
                   "Add a New Product",
                   style: TextStyle(
+                    color: Colors.black54,
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color: Colors.green,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -99,7 +101,6 @@ class _AddProductScreenState extends State<AddProductScreen> {
                     style: TextStyle(fontSize: 16),
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
@@ -127,16 +128,16 @@ class _AddProductScreenState extends State<AddProductScreen> {
       validator: validator,
       decoration: InputDecoration(
         labelText: label,
-        prefixIcon: Icon(icon, color: Colors.green),
+        prefixIcon: Icon(icon,),
         filled: true,
         fillColor: Colors.green.shade50,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: Colors.green),
+          borderSide: const BorderSide(),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: Colors.green, width: 2),
+          borderSide: const BorderSide(width: 2),
         ),
       ),
     );
@@ -147,12 +148,12 @@ class _AddProductScreenState extends State<AddProductScreen> {
     final String price = _priceController.text.trim();
     final String url = _urlController.text.trim();
 
-    const String city = 'Lahore'; // Replace with dynamic city selection if needed
+    final selectedCity = ref.watch(cityProvider);
 
     FirebaseFirestore.instance
         .collection('Cities') // Cities collection
-        .doc(city) // Lahore document (or dynamically selected city)
-        .collection('LahoreVeggies') // Fruits collection under Lahore
+        .doc(selectedCity) // Lahore document (or dynamically selected city)
+        .collection('${selectedCity}Plants') // Fruits collection under Lahore
         .add({
       'name': name,
       'price': double.parse(price),

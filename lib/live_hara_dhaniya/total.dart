@@ -2,37 +2,54 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:green_sultan/live_hara_dhaniya/analytics.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:green_sultan/provider/city_provider.dart';
 
-class Totals extends StatefulWidget {
+class Totals extends ConsumerStatefulWidget {
   const Totals({super.key});
 
   @override
-  State<Totals> createState() => _TotalsState();
+  ConsumerState<Totals> createState() => _TotalsState();
 }
 
-class _TotalsState extends State<Totals> {
+class _TotalsState extends ConsumerState<Totals> {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  late String selectedCity;
   late Map<String, String> nameToValue1;
   late Map<String, String> nameToValue3;
   late Map<String, String> nameToPrice;
 
   int grandTotalMandi = 0;
   int grandTotalPrice = 0;
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
+    _initializeData();
+  }
+
+  Future<void> _initializeData() async {
+    // Get the selected city from the provider, default to 'Lahore' if null
+    selectedCity = ref.read(cityProvider) ?? 'Sialkot';
+
     nameToValue1 = {};
     nameToValue3 = {};
     nameToPrice = {};
-    fetchValueData();
+
+    await fetchValueData();
+
+    setState(() {
+      _isLoading = false;
+    });
   }
 
   Future<void> fetchValueData() async {
     try {
-      final veggiesSnapshot = await FirebaseFirestore.instance
+      final veggiesSnapshot = await _firestore
           .collection('Cities')
-          .doc('Lahore')
-          .collection('LahoreVeggies')
+          .doc(selectedCity)
+          .collection('${selectedCity}Veggies')
           .get();
 
       final tempNameToValue1 = <String, String>{};
@@ -50,6 +67,12 @@ class _TotalsState extends State<Totals> {
     } catch (e) {
       if (kDebugMode) {
         print("Error fetching data: $e");
+      }
+      // Show an error message to the user
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error fetching data: $e")),
+        );
       }
     }
   }
@@ -76,9 +99,9 @@ class _TotalsState extends State<Totals> {
       final DateTime now = DateTime.now();
       final String formattedDate = "${now.year}-${now.month}-${now.day}";
 
-      final totalsRef = FirebaseFirestore.instance
+      final totalsRef = _firestore
           .collection('Cities')
-          .doc('Lahore')
+          .doc(selectedCity)
           .collection('Totals')
           .doc(formattedDate);
 
@@ -95,9 +118,22 @@ class _TotalsState extends State<Totals> {
       if (kDebugMode) {
         print("Grand total (Mandi) saved successfully for $formattedDate");
       }
+
+      // Show success message
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Mandi total saved successfully!")),
+        );
+      }
     } catch (e) {
       if (kDebugMode) {
         print("Error saving grand total (Mandi): $e");
+      }
+      // Show error message
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error saving Mandi total: $e")),
+        );
       }
     }
   }
@@ -107,9 +143,9 @@ class _TotalsState extends State<Totals> {
       final DateTime now = DateTime.now();
       final String formattedDate = "${now.year}-${now.month}-${now.day}";
 
-      final totalsRef = FirebaseFirestore.instance
+      final totalsRef = _firestore
           .collection('Cities')
-          .doc('Lahore')
+          .doc(selectedCity)
           .collection('Totals')
           .doc(formattedDate);
 
@@ -126,18 +162,40 @@ class _TotalsState extends State<Totals> {
       if (kDebugMode) {
         print("Grand total (Price) saved successfully for $formattedDate");
       }
+
+      // Show success message
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Price total saved successfully!")),
+        );
+      }
     } catch (e) {
       if (kDebugMode) {
         print("Error saving grand total (Price): $e");
+      }
+      // Show error message
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error saving Price total: $e")),
+        );
       }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    // Listen for changes to the selected city
+    final currentCity = ref.watch(cityProvider);
+
+    // If city changes, update and refetch data
+    if (currentCity != null && currentCity != selectedCity) {
+      selectedCity = currentCity;
+      fetchValueData();
+    }
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Total"),
+        title: Text("Total - $selectedCity"),
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 20),
@@ -155,23 +213,49 @@ class _TotalsState extends State<Totals> {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            const SizedBox(height: 20),
-            buildOrderHistoryMessageTable(),
-            buildSaveButtons(),
-          ],
-        ),
-      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              child: Column(
+                children: [
+                  // City selection information
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Card(
+                      elevation: 2,
+                      child: Padding(
+                        padding: const EdgeInsets.all(12.0),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.location_city,
+                                color: Colors.green),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Selected City: $selectedCity',
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  buildOrderHistoryMessageTable(),
+                  buildSaveButtons(),
+                ],
+              ),
+            ),
     );
   }
 
   Widget buildOrderHistoryMessageTable() {
     return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance
+      stream: _firestore
           .collection('Cities')
-          .doc('Lahore')
+          .doc(selectedCity)
           .collection('OrderDetails')
           .snapshots(),
       builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
@@ -199,8 +283,8 @@ class _TotalsState extends State<Totals> {
           if (kDebugMode) {
             print('Error building message table: $e');
           }
-          return const Center(
-            child: Text('Error processing order data'),
+          return Center(
+            child: Text('Error processing order data: $e'),
           );
         }
       },
@@ -324,9 +408,9 @@ class _TotalsState extends State<Totals> {
       final DateTime now = DateTime.now();
       final String formattedDate = "${now.year}-${now.month}-${now.day}";
 
-      final totalsRef = FirebaseFirestore.instance
+      final totalsRef = _firestore
           .collection('Cities')
-          .doc('Lahore')
+          .doc(selectedCity)
           .collection('Totals')
           .doc(formattedDate);
 

@@ -1,32 +1,29 @@
 import 'package:animate_do/animate_do.dart';
-import 'package:flutter/gestures.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:green_sultan/auth/login_screen.dart';
-import 'package:green_sultan/home.dart';
-import 'package:green_sultan/rider_app/main.dart';
 import '../forms/city_select_drop_down.dart';
 import '../forms/role_select_drop_down.dart';
 import '../forms/sing_up_form.dart';
-import '../fruits_veggies/products/veggies_price.dart';
 import '../provider/city_provider.dart';
 import '../provider/selected_city_provider.dart';
 import '../provider/user_provider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-class SignUpScreen extends ConsumerStatefulWidget {
-  const SignUpScreen({super.key});
+class CreateUserScreen extends ConsumerStatefulWidget {
+  const CreateUserScreen({super.key});
 
   @override
-  ConsumerState<SignUpScreen> createState() => _SignUpScreenState();
+  ConsumerState<CreateUserScreen> createState() => _CreateUserScreenState();
 }
 
-class _SignUpScreenState extends ConsumerState<SignUpScreen> {
+class _CreateUserScreenState extends ConsumerState<CreateUserScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _userController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController =
-  TextEditingController();
+      TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
@@ -41,42 +38,47 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
     });
   }
 
-  Future<void> saveUserData(String email, String password, String selectedCity, String selectedRole) async {
+  Future<void> saveUserData(String email, String password, String selectedCity,
+      String selectedRole) async {
     try {
-      // Save user data in Firestore
-      await ref.read(userProvider.notifier).saveUser(
-        _userController.text.trim(),
-        email,
-        selectedCity,
-        selectedRole,
+      // Verify that selectedCity is a valid city name and not a role
+      final cityList = ref.read(cityProvider2);
+      if (!cityList.contains(selectedCity)) {
+        showSnackbar(
+            'Error: Invalid city selected. Please choose a valid city.');
+        return;
+      }
+
+      // First create user in Firebase Authentication
+      final userCredential =
+          await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
       );
 
-      // Navigate based on the role
-      navigateToRoleScreen(selectedRole);
+      // Save user data in Firestore under the correct city document
+      await FirebaseFirestore.instance
+          .collection('Cities')
+          .doc(selectedCity)
+          .collection('Green_Sultan_Users')
+          .doc(email)
+          .set({
+        'name': _userController.text.trim(),
+        'email': email,
+        'role': selectedRole,
+        'timestamp': FieldValue.serverTimestamp(),
+      });
+
+      // Update provider state
+      await ref.read(userProvider.notifier).saveUser(
+            _userController.text.trim(),
+            email,
+            selectedCity,
+            selectedRole,
+          );
     } catch (e) {
       showSnackbar('Error creating account: $e');
     }
-  }
-
-  // Role-based navigation
-  void navigateToRoleScreen(String selectedRole) {
-    Widget destinationScreen;
-
-    // Use if-else to check the role and navigate accordingly
-    if (selectedRole == 'owner') {
-      destinationScreen = HomeScreen();
-    } else if (selectedRole == 'administrator') {
-      destinationScreen = VeggiesListBeforeVefification();
-    } else if (selectedRole == 'rider') {
-      destinationScreen = RiderApp();
-    } else {
-      destinationScreen = HomeScreen(); // Default screen if no role matched
-    }
-
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => destinationScreen),
-    );
   }
 
   void showSnackbar(String message) {
@@ -86,18 +88,33 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Check access rights immediately before rendering
+    final hasAccess = ref.read(hasPermissionProvider('AdminSection'));
+
+    if (!hasAccess) {
+      // If no access, redirect back or show an access denied screen
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Navigator.of(context).pop();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content:
+                  Text('You do not have permission to access this section')),
+        );
+      });
+    }
+
     final size = MediaQuery.of(context).size;
     final cities = ref.watch(cityProvider2);
     final selectedCity = ref.watch(cityProvider);
 
     return Scaffold(
       resizeToAvoidBottomInset: true,
-      backgroundColor: Colors.green,
+      backgroundColor: Colors.green[400],
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
             children: [
-              const SizedBox(height: 70),
+              const SizedBox(height: 50),
               buildCard(size, selectedCity, cities),
             ],
           ),
@@ -108,21 +125,27 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
 
   Widget buildCard(Size size, String? selectedCity, List<String> cities) {
     return FadeInUp(
-      duration:
-      const Duration(milliseconds: 600), // Adjust the duration as needed
+      duration: const Duration(
+          milliseconds: 800), // Adjusted duration for a smoother effect
       child: Container(
-        height: 800, // Increased height to accommodate dropdown
         decoration: BoxDecoration(
           borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(40), topRight: Radius.circular(40)),
+              topLeft: Radius.circular(30), topRight: Radius.circular(30)),
           color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black26,
+              offset: Offset(0, 4),
+              blurRadius: 6,
+            )
+          ],
         ),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 35.0, vertical: 20.0),
           child: Form(
             key: _formKey,
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.start,
               children: [
                 buildHeaderText(),
                 const SizedBox(height: 25),
@@ -132,7 +155,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                   selectedCity: selectedCity,
                   cities: cities,
                   onCityChanged: (value) {
-                    ref.read(cityProvider.notifier).setSelectedCity(value);
+                    ref.read(cityProvider.notifier).state = value;
                   },
                 ),
                 const SizedBox(height: 15),
@@ -168,7 +191,6 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                 const SizedBox(height: 20),
                 signUpButton(size, selectedCity),
                 const SizedBox(height: 20),
-                footerText(context),
               ],
             ),
           ),
@@ -181,17 +203,16 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
     return Column(
       children: [
         Text(
-          'Create Account',
-          style: GoogleFonts.inter(
-            fontSize: 24.0,
+          'Create User Account',
+          style: GoogleFonts.poppins(
+            fontSize: 26.0,
             fontWeight: FontWeight.w600,
             color: Colors.black,
           ),
         ),
         Text(
-          'Sign up to get started',
-          style:
-          GoogleFonts.inter(fontSize: 14.0, color: const Color(0xFF969AA8)),
+          'Join us and start your journey',
+          style: GoogleFonts.poppins(fontSize: 14.0, color: Color(0xFF6C6C6C)),
           textAlign: TextAlign.center,
         ),
       ],
@@ -209,12 +230,23 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
 
   Widget signUpButton(Size size, String? selectedCity) {
     return ElevatedButton(
-      onPressed: () {
+      onPressed: () async {
         if (_formKey.currentState?.validate() ?? false) {
           final email = _emailController.text.trim();
           final password = _passwordController.text.trim();
+
           if (selectedCity != null && _selectedRole != null) {
-            saveUserData(email, password, selectedCity, _selectedRole!);
+            try {
+              // Register the user with Firebase
+              await saveUserData(email, password, selectedCity, _selectedRole!);
+
+              // Show success message
+              showSnackbar(
+                  'User Creation successful! Welcome ${_userController.text}');
+            } catch (e) {
+              // Handle signup errors
+              showSnackbar('User Creation failed: $e');
+            }
           } else {
             showSnackbar('Please select a city and a role');
           }
@@ -223,40 +255,15 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
       style: ElevatedButton.styleFrom(
         backgroundColor: Colors.green,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
-        minimumSize: Size(size.width, size.height / 15),
+        minimumSize: Size(size.width, size.height / 17),
       ),
       child: Text(
-        'Sign up',
-        style: GoogleFonts.inter(
+        'Create Account',
+        style: GoogleFonts.poppins(
           fontSize: 16.0,
           color: Colors.white,
           fontWeight: FontWeight.w600,
         ),
-      ),
-    );
-  }
-
-  Widget footerText(BuildContext context) {
-    return Text.rich(
-      TextSpan(
-        style:
-        GoogleFonts.inter(fontSize: 12.0, color: const Color(0xFF3B4C68)),
-        children: [
-          const TextSpan(text: 'Don’t have an account?'),
-          TextSpan(
-            text: ' Log in',
-            style: const TextStyle(
-                color: Color(0xFFFF5844), fontWeight: FontWeight.w700),
-            recognizer: TapGestureRecognizer()
-              ..onTap = () {
-                // Navigate to the Sign Up screen
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => LoginScreen()),
-                );
-              },
-          ),
-        ],
       ),
     );
   }

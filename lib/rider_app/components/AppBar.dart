@@ -16,29 +16,81 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AppBar(
-      title: const Row(
-        children: [
-          Icon(Icons.motorcycle),
-          SizedBox(width: 8),
-          Text('Rider App'),
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Colors.green.shade800,
+            Colors.green.shade600,
+          ],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black26,
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
         ],
       ),
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.print),
-          onPressed: () {
-            saveData();
-            generateAndDisplayInvoice();
-          },
+      child: AppBar(
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.white24,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(Icons.motorcycle, color: Colors.white),
+            ),
+            const SizedBox(width: 12),
+            const Text(
+              'Rider App',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 20,
+                letterSpacing: 0.5,
+              ),
+            ),
+          ],
         ),
-        IconButton(
-          icon: const Icon(Icons.clear),
-          onPressed: () {
-            clearMessage();
-          },
-        ),
-      ],
+        actions: [
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 4),
+            decoration: BoxDecoration(
+              color: Colors.white24,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.print, color: Colors.white),
+              tooltip: 'Generate Invoice',
+              onPressed: () {
+                saveData();
+                generateAndDisplayInvoice();
+              },
+            ),
+          ),
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 4),
+            decoration: BoxDecoration(
+              color: Colors.white24,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.clear, color: Colors.white),
+              tooltip: 'Clear Message',
+              onPressed: () {
+                clearMessage();
+              },
+            ),
+          ),
+          const SizedBox(width: 8),
+        ],
+      ),
     );
   }
 

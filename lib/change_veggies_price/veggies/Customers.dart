@@ -1,16 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:green_sultan/provider/user_provider.dart';
 
-class CustomersScreen extends StatefulWidget {
+import '../../provider/city_provider.dart';
+
+class CustomersScreen extends ConsumerStatefulWidget {
   const CustomersScreen({super.key});
 
   @override
-  _CustomersScreenState createState() => _CustomersScreenState();
+  CustomersScreenState createState() => CustomersScreenState();
 }
 
-class _CustomersScreenState extends State<CustomersScreen> {
+class CustomersScreenState extends ConsumerState<CustomersScreen> {
   final TextEditingController _messageController = TextEditingController();
   final TextEditingController _searchController = TextEditingController();
   late CollectionReference _messagesCollection;
@@ -18,15 +22,18 @@ class _CustomersScreenState extends State<CustomersScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   List<Map<String, dynamic>> _messages = [];
   List<Map<String, dynamic>> _filteredMessages = [];
-  int _messageCount = 0; // New variable to count messages
+  int messageCount = 0; // New variable to count messages
 
   @override
   void initState() {
     super.initState();
+
+    final selectedCity = ref.read(cityProvider);
+
     // Define the Firestore path
     _messagesCollection = FirebaseFirestore.instance
         .collection('Cities')
-        .doc('Lahore')
+        .doc(selectedCity)
         .collection('Messages');
 
     // Reference the 'all_messages' document in the 'Messages' collection
@@ -45,16 +52,39 @@ class _CustomersScreenState extends State<CustomersScreen> {
 
   void _fetchMessages() async {
     final messagesSnapshot = await _messagesReference.get();
-    final List<Map<String, dynamic>> messages = _getMessagesFromSnapshot(messagesSnapshot);
+    final List<Map<String, dynamic>> messages =
+        _getMessagesFromSnapshot(messagesSnapshot);
     setState(() {
       _messages = messages;
       _filteredMessages = _messages;
-      _messageCount = _messages.length; // Update message count
+      messageCount = _messages.length; // Update message count
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    // Check access rights immediately before rendering
+    final hasAccess = ref.read(hasPermissionProvider('CustomerNumbers'));
+
+    if (!hasAccess) {
+      // If no access, redirect back or show an access denied screen
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Navigator.of(context).pop();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content:
+                  Text('You do not have permission to access this section')),
+        );
+      });
+
+      // Return a loading indicator until the redirect happens
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Customers'),
@@ -160,7 +190,8 @@ class _CustomersScreenState extends State<CustomersScreen> {
             itemBuilder: (context, index) {
               final messageData = _filteredMessages[index];
               final message = messageData['message'];
-              final timestamp = (messageData['timestamp'] as Timestamp).toDate();
+              final timestamp =
+                  (messageData['timestamp'] as Timestamp).toDate();
 
               return ListTile(
                 title: Column(
@@ -182,11 +213,13 @@ class _CustomersScreenState extends State<CustomersScreen> {
                   children: [
                     IconButton(
                       icon: const Icon(Icons.edit),
-                      onPressed: () => _confirmPinAndEditMessage(context, index, message),
+                      onPressed: () =>
+                          _confirmPinAndEditMessage(context, index, message),
                     ),
                     IconButton(
                       icon: const Icon(Icons.delete),
-                      onPressed: () => _confirmPinAndDeleteMessage(context, index, message),
+                      onPressed: () =>
+                          _confirmPinAndDeleteMessage(context, index, message),
                     ),
                   ],
                 ),
@@ -198,22 +231,28 @@ class _CustomersScreenState extends State<CustomersScreen> {
     );
   }
 
-
   void _filterMessages(String query) {
     setState(() {
       if (query.isEmpty) {
         _filteredMessages = _messages;
       } else {
-        _filteredMessages = _messages.where((msg) => msg['message'].toLowerCase().contains(query.toLowerCase())).toList();
+        _filteredMessages = _messages
+            .where((msg) =>
+                msg['message'].toLowerCase().contains(query.toLowerCase()))
+            .toList();
       }
     });
   }
-  List<Map<String, dynamic>> _getMessagesFromSnapshot(DocumentSnapshot snapshot) {
+
+  List<Map<String, dynamic>> _getMessagesFromSnapshot(
+      DocumentSnapshot snapshot) {
     final Map<String, dynamic>? data = snapshot.data() as Map<String, dynamic>?;
 
-    if (data != null && data.containsKey('messages') && data['messages'] is List) {
+    if (data != null &&
+        data.containsKey('messages') &&
+        data['messages'] is List) {
       List<Map<String, dynamic>> messages =
-      List<Map<String, dynamic>>.from(data['messages'] as List<dynamic>);
+          List<Map<String, dynamic>>.from(data['messages'] as List<dynamic>);
 
       // Sort messages based on timestamp in descending order
       messages.sort((a, b) {
@@ -237,7 +276,8 @@ class _CustomersScreenState extends State<CustomersScreen> {
       // Check if there are any phone numbers in the message
       if (phoneNumbersInMessage.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Message should contain at least one phone number with country code'),
+          content: Text(
+              'Message should contain at least one phone number with country code'),
           duration: Duration(seconds: 2),
         ));
         return;
@@ -316,14 +356,13 @@ class _CustomersScreenState extends State<CustomersScreen> {
     }).toList();
   }
 
-
-
   void _copyAllMessages() async {
     final allMessagesSnapshot = await _messagesReference.get();
     final existingMessages = _getMessagesFromSnapshot(allMessagesSnapshot);
 
     if (existingMessages.isNotEmpty) {
-      final messagesString = existingMessages.map((msg) => msg['message']).join('\n');
+      final messagesString =
+          existingMessages.map((msg) => msg['message']).join('\n');
       await Clipboard.setData(ClipboardData(text: messagesString));
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
         content: Text('All messages copied to clipboard'),
@@ -343,7 +382,8 @@ class _CustomersScreenState extends State<CustomersScreen> {
       builder: (context) {
         return AlertDialog(
           title: const Text('Duplicate Number Found'),
-          content: Text('The following number(s) already exist: ${duplicateNumbers.join(', ')}. Please change the number(s).'),
+          content: Text(
+              'The following number(s) already exist: ${duplicateNumbers.join(', ')}. Please change the number(s).'),
           actions: [
             TextButton(
               onPressed: () {
@@ -357,7 +397,8 @@ class _CustomersScreenState extends State<CustomersScreen> {
     );
   }
 
-  void _confirmPinAndEditMessage(BuildContext context, int index, String message) {
+  void _confirmPinAndEditMessage(
+      BuildContext context, int index, String message) {
     final TextEditingController pinController = TextEditingController();
     showDialog(
       context: context,
@@ -406,7 +447,8 @@ class _CustomersScreenState extends State<CustomersScreen> {
     );
   }
 
-  void _confirmPinAndDeleteMessage(BuildContext context, int index, String message) {
+  void _confirmPinAndDeleteMessage(
+      BuildContext context, int index, String message) {
     showDialog(
       context: context,
       builder: (context) {
@@ -437,7 +479,8 @@ class _CustomersScreenState extends State<CustomersScreen> {
     showDialog(
       context: context,
       builder: (context) {
-        final TextEditingController editController = TextEditingController(text: message);
+        final TextEditingController editController =
+            TextEditingController(text: message);
         return AlertDialog(
           title: const Text('Edit Message'),
           content: TextFormField(
@@ -463,7 +506,8 @@ class _CustomersScreenState extends State<CustomersScreen> {
                 if (_formKey.currentState!.validate()) {
                   final updatedMessage = editController.text.trim();
                   final messagesSnapshot = await _messagesReference.get();
-                  final List<Map<String, dynamic>> messages = _getMessagesFromSnapshot(messagesSnapshot);
+                  final List<Map<String, dynamic>> messages =
+                      _getMessagesFromSnapshot(messagesSnapshot);
                   messages[index]['message'] = updatedMessage;
                   _messagesReference.update({'messages': messages}).then((_) {
                     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
@@ -489,7 +533,8 @@ class _CustomersScreenState extends State<CustomersScreen> {
 
   void _deleteMessage(int index) async {
     final messagesSnapshot = await _messagesReference.get();
-    final List<Map<String, dynamic>> messages = _getMessagesFromSnapshot(messagesSnapshot);
+    final List<Map<String, dynamic>> messages =
+        _getMessagesFromSnapshot(messagesSnapshot);
     messages.removeAt(index);
     _messagesReference.update({'messages': messages}).then((_) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(

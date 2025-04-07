@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:green_sultan/fruits_veggies/components/appbar.dart';
-import 'package:green_sultan/fruits_veggies/products/productList.dart';
-import 'package:green_sultan/fruits_veggies/products/product_add_form.dart';
+import 'package:green_sultan/change_veggies_price/plants/plants_add_form.dart';
+import 'package:green_sultan/change_veggies_price/plants/plants_list.dart';
+import 'components/plants_app_bar.dart';
 
-class VeggiesListBeforeVefification extends StatefulWidget {
-  const VeggiesListBeforeVefification({super.key});
+
+class PlantsListBeforeVerification extends StatefulWidget {
+  const PlantsListBeforeVerification({super.key});
 
   @override
   ProductListState createState() => ProductListState();
 }
 
-class ProductListState extends State<VeggiesListBeforeVefification> {
+class ProductListState extends State<PlantsListBeforeVerification> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
 
@@ -33,7 +34,7 @@ class ProductListState extends State<VeggiesListBeforeVefification> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: ProductAppBar(),
+      appBar: PlantsAppBar(),
       body: Column(
         children: [
           Padding(
@@ -49,7 +50,7 @@ class ProductListState extends State<VeggiesListBeforeVefification> {
           ),
           Expanded(
             child:
-            VeggiesListAfterVefification(isPinVerified: false, searchQuery: _searchQuery),
+            PlantsListAfterVerification(isPinVerified: false, searchQuery: _searchQuery),
           ),
         ],
       ),
@@ -57,7 +58,7 @@ class ProductListState extends State<VeggiesListBeforeVefification> {
         onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => AddProductScreen()),
+            MaterialPageRoute(builder: (context) => AddPlantsScreen()),
           );
         },
         child: const Icon(Icons.add),
@@ -66,14 +67,14 @@ class ProductListState extends State<VeggiesListBeforeVefification> {
   }
 }
 
-class PinCodeScreen extends StatefulWidget {
-  const PinCodeScreen({super.key});
+class PlantsPinCodeScreen extends StatefulWidget {
+  const PlantsPinCodeScreen({super.key});
 
   @override
-  State<PinCodeScreen> createState() => _PinCodeScreenState();
+  State<PlantsPinCodeScreen> createState() => _PinCodeScreenState();
 }
 
-class _PinCodeScreenState extends State<PinCodeScreen> {
+class _PinCodeScreenState extends State<PlantsPinCodeScreen> {
   final TextEditingController _pinController = TextEditingController();
   final String _correctPin = '786'; // Correct PIN
   bool _isPinVerified = false;
@@ -84,7 +85,7 @@ class _PinCodeScreenState extends State<PinCodeScreen> {
       appBar: AppBar(
         title: const Text('Enter PIN'),
         centerTitle: true,
-        backgroundColor: Colors.green,
+        // backgroundColor: Colors.green,
         elevation: 4,
       ),
       body: Center(
@@ -105,7 +106,7 @@ class _PinCodeScreenState extends State<PinCodeScreen> {
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: Colors.green,
+                      // color: Colors.green,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -114,7 +115,7 @@ class _PinCodeScreenState extends State<PinCodeScreen> {
                     controller: _pinController,
                     decoration: InputDecoration(
                       labelText: 'PIN',
-                      prefixIcon: const Icon(Icons.lock, color: Colors.green),
+                      prefixIcon: const Icon(Icons.lock),
                       filled: true,
                       fillColor: Colors.green.shade50,
                       border: OutlineInputBorder(
@@ -122,7 +123,7 @@ class _PinCodeScreenState extends State<PinCodeScreen> {
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
-                        borderSide: const BorderSide(color: Colors.green, width: 2),
+                        borderSide: const BorderSide(width: 2),
                       ),
                     ),
                     keyboardType: TextInputType.number,
@@ -135,7 +136,6 @@ class _PinCodeScreenState extends State<PinCodeScreen> {
                       _verifyPin(context);
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green,
                       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
@@ -163,7 +163,6 @@ class _PinCodeScreenState extends State<PinCodeScreen> {
 
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
         content: Text('PIN Verified Successfully'),
-        backgroundColor: Colors.green,
         duration: Duration(seconds: 2),
       ));
 
@@ -171,7 +170,7 @@ class _PinCodeScreenState extends State<PinCodeScreen> {
         context,
         MaterialPageRoute(
           builder: (context) =>
-              ProductFruitsListWithPin(isPinVerified: _isPinVerified),
+              ProductPlantsListWithPin(isPinVerified: _isPinVerified),
         ),
       );
     } else {
@@ -190,10 +189,10 @@ class _PinCodeScreenState extends State<PinCodeScreen> {
   }
 }
 
-class ProductFruitsListWithPin extends StatelessWidget {
+class ProductPlantsListWithPin extends StatelessWidget {
   final bool isPinVerified;
 
-  const ProductFruitsListWithPin({super.key, required this.isPinVerified});
+  const ProductPlantsListWithPin({super.key, required this.isPinVerified});
 
   @override
   Widget build(BuildContext context) {
@@ -209,12 +208,12 @@ class ProductFruitsListWithPin extends StatelessWidget {
           ),
         ],
       ),
-      body: VeggiesListAfterVefification(isPinVerified: isPinVerified, searchQuery: ''),
+      body: PlantsListAfterVerification(isPinVerified: isPinVerified, searchQuery: ''),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => AddProductScreen()),
+            MaterialPageRoute(builder: (context) => AddPlantsScreen()),
           );
         },
         child: const Icon(Icons.add),

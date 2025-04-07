@@ -24,3 +24,6 @@ class CityNotifier2 extends StateNotifier<List<String>> {
 final cityProvider2 = StateNotifierProvider<CityNotifier2, List<String>>((ref) {
   return CityNotifier2();
 });
+
+// Add this new provider for selected city
+final selectedCityProvider = StateProvider<String?>((ref) => null);

@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -31,7 +31,7 @@ class CityNotifier extends StateNotifier<String?> {
   }
 }
 
-// Create a Riverpod provider for the CityNotifier
+// Create a StateNotifierProvider for the CityNotifier
 final cityProvider = StateNotifierProvider<CityNotifier, String?>((ref) {
   return CityNotifier();
 });

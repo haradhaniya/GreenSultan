@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../analytics.dart';
 import '../pages/Completed_Order.dart';
 import '../pages/Whatsapp Orders.dart';
- // Import the necessary screens
+// Import the necessary screens
 
 class CustomDrawer extends StatelessWidget {
   const CustomDrawer({super.key});
@@ -21,12 +21,13 @@ class CustomDrawer extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 CircleAvatar(
-                  backgroundImage: AssetImage('images/app_logo.png'), // Set profile image
+                  backgroundImage:
+                      AssetImage('images/app_logo.png'), // Set profile image
                   radius: 40,
                 ),
                 SizedBox(height: 16),
                 Text(
-                  'Welcome, Hara Dhaniya', // Header text
+                  'Welcome, User', // Header text
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 20,
@@ -52,7 +53,8 @@ class CustomDrawer extends StatelessWidget {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const AnalyticsScreen()),
+                MaterialPageRoute(
+                    builder: (context) => const AnalyticsScreen()),
               );
             },
           ),
@@ -62,7 +64,8 @@ class CustomDrawer extends StatelessWidget {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const CompletedOrdersList()),
+                MaterialPageRoute(
+                    builder: (context) => const CompletedOrdersList()),
               );
             },
           ),
