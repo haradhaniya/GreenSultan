@@ -1,0 +1,368 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:green_sultan/features/home/views/product_screen.dart';
+import 'package:green_sultan/models/subcategoryModel.dart';
+import 'package:green_sultan/provider/selected_city_provider.dart';
+import 'package:green_sultan/provider/sub_category_provider.dart';
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:path/path.dart' as path;
+
+class SubcategoryScreen extends ConsumerStatefulWidget {
+  final String categoryId;
+  final String categoryName;
+  final String selectedCity;
+
+  const SubcategoryScreen({
+    Key? key,
+    required this.categoryId,
+    required this.categoryName,
+    required this.selectedCity,
+  }) : super(key: key);
+
+  @override
+  ConsumerState<SubcategoryScreen> createState() => _SubcategoryScreenState();
+}
+
+class _SubcategoryScreenState extends ConsumerState<SubcategoryScreen> {
+  final _formKey = GlobalKey<FormState>();
+  final _nameController = TextEditingController();
+  File? _imageFile;
+  bool _isUploading = false;
+  bool _isProcessing = false;
+  Subcategory? _selectedSubcategory;
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _pickImage() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+    
+    if (pickedFile != null) {
+      setState(() {
+        _imageFile = File(pickedFile.path);
+      });
+    }
+  }
+
+  Future<String?> _uploadImage() async {
+    if (_imageFile == null) return null;
+    
+    setState(() {
+      _isUploading = true;
+    });
+    
+    try {
+      final selectedCity = widget.selectedCity;
+      
+      final fileName = path.basename(_imageFile!.path);
+      final destination = 'subcategories/$selectedCity/${widget.categoryId}/${DateTime.now().millisecondsSinceEpoch}_$fileName';
+      final storageRef = FirebaseStorage.instance.ref().child(destination);
+      
+      final task = await storageRef.putFile(_imageFile!);
+      final downloadUrl = await task.ref.getDownloadURL();
+      
+      setState(() {
+        _isUploading = false;
+      });
+      
+      return downloadUrl;
+    } catch (e) {
+      setState(() {
+        _isUploading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to upload image: $e')),
+      );
+      return null;
+    }
+  }
+
+  Future<void> _createSubcategory() async {
+    if (!_formKey.currentState!.validate()) return;
+    
+    final selectedCity = widget.selectedCity;
+    
+    setState(() {
+      _isProcessing = true;
+    });
+
+    try {
+      String? imageUrl;
+      if (_imageFile != null) {
+        imageUrl = await _uploadImage();
+        if (imageUrl == null) {
+          setState(() {
+            _isProcessing = false;
+          });
+          return;
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please select an image')),
+        );
+        setState(() {
+          _isProcessing = false;
+        });
+        return;
+      }
+
+      // Create subcategory document
+      final docRef = await FirebaseFirestore.instance
+          .collection('Cities')
+          .doc(selectedCity)
+          .collection('categories')
+          .doc(widget.categoryId)
+          .collection('subcategory')
+          .add({
+            'name': _nameController.text,
+            'categoryId': widget.categoryId,
+            'imageUrl': imageUrl,
+            'isActive': true,
+            'createdAt': FieldValue.serverTimestamp(),
+          });
+      
+      // Fetch the newly created subcategory
+      final docSnapshot = await docRef.get();
+      final newSubcategory = Subcategory.fromFirestore(docSnapshot);
+      
+      setState(() {
+        _selectedSubcategory = newSubcategory;
+        _nameController.clear();
+        _imageFile = null;
+        _isProcessing = false;
+      });
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Subcategory created successfully')),
+      );
+    } catch (e) {
+      setState(() {
+        _isProcessing = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error creating subcategory: $e')),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final selectedCity = widget.selectedCity;
+    
+    final subcategoriesAsync = ref.watch(
+      subcategoriesProvider((selectedCity, widget.categoryId))
+    );
+    
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('${widget.categoryName} - Subcategories'),
+        centerTitle: true,
+        elevation: 0,
+      ),
+      body: Column(
+        children: [
+          // Create subcategory form
+          Form(
+            key: _formKey,
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Selected City: $selectedCity', 
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                  Text('Selected Category: ${widget.categoryName}', 
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                  const SizedBox(height: 16),
+                  
+                  // Subcategory name field
+                  TextFormField(
+                    controller: _nameController,
+                    decoration: const InputDecoration(
+                      labelText: 'Subcategory Name',
+                      border: OutlineInputBorder(),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter a subcategory name';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  
+                  // Image preview
+                  if (_imageFile != null)
+                    Container(
+                      height: 150,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(8),
+                        image: DecorationImage(
+                          image: FileImage(_imageFile!),
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                      margin: const EdgeInsets.only(bottom: 16),
+                    ),
+                  
+                  // Image picker button
+                  ElevatedButton.icon(
+                    onPressed: _isUploading ? null : _pickImage,
+                    icon: const Icon(Icons.image),
+                    label: const Text('Select Image'),
+                    style: ElevatedButton.styleFrom(
+                      minimumSize: const Size.fromHeight(50),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  
+                  // Create button
+                  ElevatedButton(
+                    onPressed: _isProcessing || _isUploading ? null : _createSubcategory,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      minimumSize: const Size.fromHeight(50),
+                    ),
+                    child: _isProcessing
+                        ? const CircularProgressIndicator(color: Colors.white)
+                        : const Text('Create Subcategory', 
+                            style: TextStyle(color: Colors.white, fontSize: 16)),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          
+          // Divider
+          const Divider(thickness: 1),
+          
+          // Subcategory list
+          Expanded(
+            child: subcategoriesAsync.when(
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (error, stack) => Center(child: Text('Error: $error')),
+              data: (subcategories) {
+                if (subcategories.isEmpty) {
+                  return const Center(
+                    child: Text('No subcategories found. Create one above.'),
+                  );
+                }
+                
+                return ListView.builder(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: subcategories.length,
+                  itemBuilder: (context, index) {
+                    final subcategory = subcategories[index];
+                    final isSelected = _selectedSubcategory?.id == subcategory.id;
+                    
+                    return Card(
+                      elevation: isSelected ? 4 : 1,
+                      margin: const EdgeInsets.only(bottom: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        side: isSelected
+                            ? const BorderSide(color: Colors.green, width: 2)
+                            : BorderSide.none,
+                      ),
+                      child: InkWell(
+                        onTap: () {
+                          setState(() {
+                            _selectedSubcategory = subcategory;
+                          });
+                        },
+                        borderRadius: BorderRadius.circular(12),
+                        child: Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: Row(
+                            children: [
+                              // Subcategory image
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: subcategory.imageUrl.isNotEmpty
+                                    ? Image.network(
+                                        subcategory.imageUrl,
+                                        width: 60,
+                                        height: 60,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (context, error, stackTrace) => const Icon(
+                                          Icons.image_not_supported,
+                                          size: 60,
+                                          color: Colors.grey,
+                                        ),
+                                      )
+                                    : const Icon(
+                                        Icons.category,
+                                        size: 60,
+                                        color: Colors.grey,
+                                      ),
+                              ),
+                              
+                              const SizedBox(width: 16),
+                              
+                              // Subcategory name
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      subcategory.name,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                    Text(
+                                      'ID: ${subcategory.id}',
+                                      style: const TextStyle(
+                                        color: Colors.grey,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              
+                              // View products button
+                              ElevatedButton.icon(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => ProductScreen(
+                                        categoryId: widget.categoryId,
+                                        categoryName: widget.categoryName,
+                                        subcategoryId: subcategory.id,
+                                        subcategoryName: subcategory.name,
+                                      ),
+                                    ),
+                                  );
+                                },
+                                icon: const Icon(Icons.arrow_forward),
+                                label: const Text('View Products'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.blue,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

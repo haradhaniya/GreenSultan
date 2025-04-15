@@ -1,0 +1,2 @@
+C:/flutterdev/project/GreenSultan-master/GreenSultan-master/android/app/.cxx/Debug/324n3a24/x86/CMakeFiles/edit_cache.dir
+C:/flutterdev/project/GreenSultan-master/GreenSultan-master/android/app/.cxx/Debug/324n3a24/x86/CMakeFiles/rebuild_cache.dir

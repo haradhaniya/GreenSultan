@@ -1,0 +1,366 @@
+{
+  "project_info": {
+    "project_number": "1074023990435",
+    "project_id": "haradhaniya-f828c",
+    "storage_bucket": "haradhaniya-f828c.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1074023990435:android:4f7db278cdee319a56ab16",
+        "android_client_info": {
+          "package_name": "com.example.admin_panel"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1074023990435-tk834i6vhdqlbqhu8sjgq8l4s6mg513g.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAJOzUr-D6Pmck9tnpimgfqmZvOmcp1D8o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1074023990435-lgqnfrdb0v0oc85t8k2loafushkd2vmb.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1074023990435-2vq4cgc6r16j7pt3sc8f62qjsqshejeb.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.haradhaniya"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1074023990435:android:ad60c484df07830956ab16",
+        "android_client_info": {
+          "package_name": "com.example.auto_fruits_veggies_prices"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1074023990435-tk834i6vhdqlbqhu8sjgq8l4s6mg513g.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAJOzUr-D6Pmck9tnpimgfqmZvOmcp1D8o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1074023990435-lgqnfrdb0v0oc85t8k2loafushkd2vmb.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1074023990435-2vq4cgc6r16j7pt3sc8f62qjsqshejeb.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.haradhaniya"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1074023990435:android:3dae827421dc405356ab16",
+        "android_client_info": {
+          "package_name": "com.example.fruits_and_veggies_prices"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1074023990435-tk834i6vhdqlbqhu8sjgq8l4s6mg513g.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAJOzUr-D6Pmck9tnpimgfqmZvOmcp1D8o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1074023990435-lgqnfrdb0v0oc85t8k2loafushkd2vmb.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1074023990435-2vq4cgc6r16j7pt3sc8f62qjsqshejeb.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.haradhaniya"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1074023990435:android:1f2698ab4d71ee3856ab16",
+        "android_client_info": {
+          "package_name": "com.example.green_sultan"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1074023990435-tk834i6vhdqlbqhu8sjgq8l4s6mg513g.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAJOzUr-D6Pmck9tnpimgfqmZvOmcp1D8o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1074023990435-lgqnfrdb0v0oc85t8k2loafushkd2vmb.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1074023990435-2vq4cgc6r16j7pt3sc8f62qjsqshejeb.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.haradhaniya"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1074023990435:android:586bd5643990241456ab16",
+        "android_client_info": {
+          "package_name": "com.example.live_prices_cha"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1074023990435-tk834i6vhdqlbqhu8sjgq8l4s6mg513g.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAJOzUr-D6Pmck9tnpimgfqmZvOmcp1D8o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1074023990435-lgqnfrdb0v0oc85t8k2loafushkd2vmb.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1074023990435-2vq4cgc6r16j7pt3sc8f62qjsqshejeb.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.haradhaniya"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1074023990435:android:0bccce6d1d81554556ab16",
+        "android_client_info": {
+          "package_name": "com.example.liveharadhniyaprices"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1074023990435-tk834i6vhdqlbqhu8sjgq8l4s6mg513g.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAJOzUr-D6Pmck9tnpimgfqmZvOmcp1D8o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1074023990435-lgqnfrdb0v0oc85t8k2loafushkd2vmb.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1074023990435-2vq4cgc6r16j7pt3sc8f62qjsqshejeb.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.haradhaniya"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1074023990435:android:0b69979cfb6d078056ab16",
+        "android_client_info": {
+          "package_name": "com.example.marketing_numbers"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1074023990435-klfgfup29aovd5ae42d14lsdn85e7pa6.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.marketing_numbers",
+            "certificate_hash": "e123c7f7f81bf9f7e0583ff099076581852fdb1f"
+          }
+        },
+        {
+          "client_id": "1074023990435-tk834i6vhdqlbqhu8sjgq8l4s6mg513g.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAJOzUr-D6Pmck9tnpimgfqmZvOmcp1D8o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1074023990435-lgqnfrdb0v0oc85t8k2loafushkd2vmb.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1074023990435-2vq4cgc6r16j7pt3sc8f62qjsqshejeb.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.haradhaniya"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1074023990435:android:0e5626bc6d87b78356ab16",
+        "android_client_info": {
+          "package_name": "com.example.vendors"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1074023990435-tk834i6vhdqlbqhu8sjgq8l4s6mg513g.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAJOzUr-D6Pmck9tnpimgfqmZvOmcp1D8o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1074023990435-lgqnfrdb0v0oc85t8k2loafushkd2vmb.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1074023990435-2vq4cgc6r16j7pt3sc8f62qjsqshejeb.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.haradhaniya"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1074023990435:android:46e6de3e890afd0556ab16",
+        "android_client_info": {
+          "package_name": "com.haradhaniya.pk"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1074023990435-6qajhslaj3igtcntvdqcvegtueqb98sr.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.haradhaniya.pk",
+            "certificate_hash": "6bcc073d0df319205f0391adaa511b566f8a7e98"
+          }
+        },
+        {
+          "client_id": "1074023990435-amutek24951jmrr5dsql8m3egkd8e3hg.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.haradhaniya.pk",
+            "certificate_hash": "4baaa301da90a15c3a04696cfe8cfd941386ea78"
+          }
+        },
+        {
+          "client_id": "1074023990435-ee639uium0ab43ts2pk9qn6f25rf1dtq.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.haradhaniya.pk",
+            "certificate_hash": "e123c7f7f81bf9f7e0583ff099076581852fdb1f"
+          }
+        },
+        {
+          "client_id": "1074023990435-tk834i6vhdqlbqhu8sjgq8l4s6mg513g.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAJOzUr-D6Pmck9tnpimgfqmZvOmcp1D8o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1074023990435-lgqnfrdb0v0oc85t8k2loafushkd2vmb.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1074023990435-2vq4cgc6r16j7pt3sc8f62qjsqshejeb.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.haradhaniya"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
