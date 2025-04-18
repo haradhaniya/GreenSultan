@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-
-import '../plants/plants_price.dart';
-import '../veggies/veggies_price.dart';
+import '../water/simple_water_panel.dart';
 
 
 class ProductAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -15,22 +13,63 @@ class ProductAppBar extends StatelessWidget implements PreferredSizeWidget {
         IconButton(
           icon: const Icon(Icons.lock),
           onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const PinVerificationScreen()),
-            );
+            _showPinDialog(context);
           },
         ),
         TextButton(
-          child: Text('Plants', style: TextStyle(color: Colors.white),),
+          child: Text('Water', style: TextStyle(color: Colors.white),),
           onPressed: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const PlantsListBeforeVerification()),
+              MaterialPageRoute(builder: (context) => const SimpleWaterPanel()),
             );
           },
         ),
       ],
+    );
+  }
+
+  void _showPinDialog(BuildContext context) {
+    final pinController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Verify PIN'),
+        content: TextField(
+          controller: pinController,
+          decoration: const InputDecoration(
+            labelText: 'Enter admin PIN',
+            border: OutlineInputBorder(),
+          ),
+          obscureText: true,
+          keyboardType: TextInputType.number,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('CANCEL'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              if (pinController.text == '786') {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('PIN verified successfully')),
+                );
+              } else {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Incorrect PIN'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            },
+            child: const Text('VERIFY'),
+          ),
+        ],
+      ),
     );
   }
 
