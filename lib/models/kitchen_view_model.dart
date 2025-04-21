@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:green_sultan/Provider/kitchen_item_provider.dart';
+
+import '../provider/kitchen_item_provider.dart';
 
 class KitchenViewModel extends ChangeNotifier {
   final KitchenRepository _repository = KitchenRepository();

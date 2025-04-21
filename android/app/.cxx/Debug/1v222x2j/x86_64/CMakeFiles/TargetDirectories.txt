@@ -1,0 +1,2 @@
+/home/coder/StudioProjects/GreenSultan/android/app/.cxx/Debug/1v222x2j/x86_64/CMakeFiles/edit_cache.dir
+/home/coder/StudioProjects/GreenSultan/android/app/.cxx/Debug/1v222x2j/x86_64/CMakeFiles/rebuild_cache.dir
