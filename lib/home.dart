@@ -4,6 +4,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:green_sultan/auth/login_screen.dart';
 import 'package:green_sultan/provider/user_provider.dart';
 import 'package:green_sultan/rider_app/rider_app.dart';
+import 'package:green_sultan/screens/add_gallery_image_screen.dart';
+import 'package:green_sultan/screens/gallery_management_screen.dart';
+import 'package:green_sultan/screens/recipe_categories_screen.dart';
 import 'Home/create_user.dart';
 import 'change_veggies_price/veggies/Customers.dart';
 import 'change_veggies_price/veggies/veggies_price.dart';
@@ -67,37 +70,13 @@ class HomeScreen extends ConsumerWidget {
     final isRider = userRole == 'rider';
 
     return Scaffold(
-      body: CustomScrollView(
-        slivers: [
-          SliverAppBar(
-            expandedHeight: 120.0,
-            floating: false,
-            pinned: true,
-            elevation: 0,
-            backgroundColor: Colors.green.shade700,
-            automaticallyImplyLeading: false,
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.logout, color: Colors.white),
-                tooltip: 'Logout',
-                onPressed: () => _signOut(context),
-              ),
-            ],
-            flexibleSpace: FlexibleSpaceBar(
-              centerTitle: false,
-              titlePadding:
-                  const EdgeInsets.only(left: 20, bottom: 16, right: 20),
-              title: Text(
-                isRider
-                    ? 'Rider Dashboard'
-                    : 'Green Sultan Dashboard${userRole.isNotEmpty ? ' - ${userRole.toUpperCase()}' : ''}',
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-              background: Container(
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // App bar equivalent
+            Container(
+              height: 120,
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
@@ -133,18 +112,45 @@ class HomeScreen extends ConsumerWidget {
                           shape: BoxShape.circle,
                         ),
                       ),
+                  ),
+                  SafeArea(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              isRider
+                                  ? 'Rider Dashboard'
+                                  : 'Green Sultan Dashboard${userRole.isNotEmpty ? ' - ${userRole.toUpperCase()}' : ''}',
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.logout, color: Colors.white),
+                            tooltip: 'Logout',
+                            onPressed: () => _signOut(context),
                     ),
                   ],
                 ),
               ),
+                  ),
+                ],
             ),
           ),
-          SliverToBoxAdapter(
-            child: Padding(
+            
+            // Main content area
+            Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Section title
                   Text(
                     isRider ? 'Rider Tools' : 'Quick Access',
                     style: const TextStyle(
@@ -155,9 +161,10 @@ class HomeScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 16),
 
-                  // Grid Layout for Main Features
+                  // Grid layout for feature cards
                   GridView.count(
-                    shrinkWrap: true,
+                    shrinkWrap: true, // Important to work inside SingleChildScrollView
+                    // Disable grid scrolling
                     crossAxisCount: 2,
                     childAspectRatio: 1.0,
                     crossAxisSpacing: 12,
@@ -215,6 +222,48 @@ class HomeScreen extends ConsumerWidget {
                                   context,
                                   MaterialPageRoute(
                                       builder: (context) => MessageScreen1()),
+                                ),
+                              ),
+                            ),
+                            RoleBasedAccessControl(
+                              screenName: 'Gallery',
+                              child: _buildFeatureCard(
+                                context,
+                                title: 'Add Gallery Image',
+                                icon: Icons.photo_library,
+                                color: Colors.amber.shade700,
+                                onTap: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => const AddGalleryImageScreen()),
+                                ),
+                              ),
+                            ),
+                            RoleBasedAccessControl(
+                              screenName: 'GalleryManagement',
+                              child: _buildFeatureCard(
+                                context,
+                                title: 'Manage Gallery',
+                                icon: Icons.collections,
+                                color: Colors.teal.shade600,
+                                onTap: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => const GalleryManagementScreen()),
+                                ),
+                              ),
+                            ),
+                            RoleBasedAccessControl(
+                              screenName: 'RecipeCategories',
+                              child: _buildFeatureCard(
+                                context,
+                                title: 'Recipe Book',
+                                icon: Icons.restaurant_menu,
+                                color: Colors.pink.shade600,
+                                onTap: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => const RecipeCategoriesScreen()),
                                 ),
                               ),
                             ),
@@ -287,8 +336,8 @@ class HomeScreen extends ConsumerWidget {
                 ],
               ),
             ),
+          ],
           ),
-        ],
       ),
     );
   }
